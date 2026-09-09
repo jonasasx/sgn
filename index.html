@@ -1245,8 +1245,9 @@ function flash(msg) {
   flashT = setTimeout(() => { $("#status").textContent = "Файл не покидает браузер: PDF собирается на этой странице."; }, 4000);
 }
 
-/* ---------- личные подписи (единственное, ради чего нужен вход) ---------- */
+/* ---------- личные подписи: IndexedDB, без сервера и без входа ---------- */
 const lib = $("#libbody");
+let sigDB = null;
 
 function currentSigCanvas() {
   const mode = document.querySelector('.tab[aria-selected="true"]').dataset.mode;
@@ -1255,32 +1256,51 @@ function currentSigCanvas() {
   return uploaded;
 }
 
+// Подпись — PNG в десятки килобайт. localStorage синхронный и близко к лимиту,
+// IndexedDB асинхронна и хранит объекты как есть. Обёртка минимальная, без библиотек.
+function openSigDB() {
+  return new Promise((res, rej) => {
+    let req;
+    try { req = indexedDB.open("pdf-sign", 1); } catch (e) { return rej(e); }
+    req.onupgradeneeded = () => req.result.createObjectStore("signatures", { keyPath: "id" });
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+
+function sigTx(mode, run) {
+  return new Promise((res, rej) => {
+    const tx = sigDB.transaction("signatures", mode);
+    const req = run(tx.objectStore("signatures"));
+    tx.onerror = () => rej(tx.error);
+    tx.oncomplete = () => res(req && req.result);
+  });
+}
+
+const sigAll = () => sigTx("readonly", store => store.getAll());
+const sigPut = item => sigTx("readwrite", store => store.put(item));
+const sigDel = id => sigTx("readwrite", store => store.delete(id));
+
 async function initLibrary() {
-  let r;
-  try { r = await fetch("/api/me"); } catch { return; }   // хранилища нет (артефакт, локальный файл) — секции нет
-  if (r.status === 404) return;
-  $("#libsec").hidden = false;
-  if (r.status === 401) {
-    lib.innerHTML =
-      '<p class="hint">Без входа инструмент работает целиком — вход нужен только чтобы держать свои подписи под рукой и ставить их в один клик.</p>' +
-      '<a class="btn primary wide" style="margin-top:8px" href="/oauth2/start?rd=%2F">Войти через Google</a>';
-    return;
+  try {
+    sigDB = await openSigDB();
+  } catch {
+    return;                       // приватное окно или запрет хранилища — секции просто нет
   }
-  const { email } = await r.json();
+  $("#libsec").hidden = false;
   lib.innerHTML =
     '<div class="lib" id="libgrid"></div>' +
     '<p class="hint" id="libempty" hidden>Пока пусто. Нарисуйте, наберите или загрузите подпись и нажмите «Сохранить текущую».</p>' +
     '<button class="btn wide" id="libsave" style="margin-top:8px">Сохранить текущую подпись</button>' +
-    '<div class="row" style="margin-top:6px"><span class="who" id="libwho"></span>' +
-    '<a class="btn ghost" style="margin-left:auto" href="/oauth2/sign_out?rd=%2F">Выйти</a></div>';
-  $("#libwho").textContent = email;
+    '<p class="hint" style="margin-top:6px">Подписи лежат в этом браузере и никуда не отправляются. На другом устройстве их не будет.</p>';
   $("#libsave").onclick = saveSignature;
   await refreshLibrary();
 }
 
 async function refreshLibrary() {
   const grid = $("#libgrid");
-  const items = await (await fetch("/api/signatures")).json();
+  const items = (await sigAll()) || [];
+  items.sort((a, b) => (a.created || "").localeCompare(b.created || ""));
   grid.innerHTML = "";
   $("#libempty").hidden = items.length > 0;
   if (!items.length) return;
@@ -1288,13 +1308,13 @@ async function refreshLibrary() {
     const el = document.createElement("div");
     el.className = "sig";
     el.title = "Поставить на документ";
-    el.innerHTML = '<img alt=""><span class="nm"></span><button class="rm" title="Удалить">×</button>';
+    el.innerHTML = '<img alt=""><span class="nm"></span><button class="rm" title="Удалить">\u00d7</button>';
     el.querySelector("img").src = it.data;
     el.querySelector(".nm").textContent = it.name;
     el.onclick = e => { if (!e.target.closest(".rm")) placeSaved(it); };
     el.querySelector(".rm").onclick = async () => {
       if (!confirm(`Удалить подпись «${it.name}»? Отменить будет нельзя.`)) return;
-      await fetch("/api/signatures/" + it.id, { method: "DELETE" });
+      await sigDel(it.id);
       flash("Подпись удалена");
       refreshLibrary();
     };
@@ -1319,12 +1339,16 @@ async function saveSignature() {
   if (!c) return flash("Сначала нарисуйте, наберите или загрузите подпись");
   const t = trim(c) || c;
   const name = ($("#fio").value.trim() || "Подпись") + " · " + new Date().toLocaleDateString("ru-RU");
-  const r = await fetch("/api/signatures", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, data: t.toDataURL("image/png") })
-  });
-  if (!r.ok) return flash((await r.json()).error || "Не удалось сохранить");
+  try {
+    await sigPut({
+      id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+      name,
+      data: t.toDataURL("image/png"),
+      created: new Date().toISOString()
+    });
+  } catch (e) {
+    return flash("Не удалось сохранить: " + (e.message || e.name));
+  }
   flash("Подпись сохранена");
   refreshLibrary();
 }
