@@ -1,0 +1,1564 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Подпись на документе</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%E2%9C%8D%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#e6e8ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101219" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@500;600&display=swap">
+<style>img{max-width:100%}</style>
+</head>
+<body>
+<style>
+  :root {
+    --ground: #e6e8ee;
+    --surface: #f8f9fb;
+    --raised: #ffffff;
+    --line: #cfd4e0;
+    --line-soft: #e0e4ec;
+    --ink: #161922;
+    --muted: #5b6470;
+    --muted-strong: #3b4250;
+    --accent: #2438c4;
+    --accent-ink: #ffffff;
+    --accent-soft: #e4e7fb;
+    --danger: #b3261e;
+    --shadow: 0 1px 2px rgba(20,24,40,.06), 0 8px 24px rgba(20,24,40,.08);
+    --r: 8px;
+    --ctl-h: 38px;
+    --ctl-fs: 13.5px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #101219;
+      --surface: #191c24;
+      --raised: #21252f;
+      --line: #3d4354;
+      --line-soft: #282d38;
+      --ink: #e7eaf2;
+      --muted: #98a1b5;
+      --muted-strong: #c2c9d8;
+      --accent: #93a4ff;
+      --accent-ink: #12141c;
+      --accent-soft: #242a44;
+      --danger: #ff9a92;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #101219;
+    --surface: #191c24;
+    --raised: #21252f;
+    --line: #3d4354;
+    --line-soft: #282d38;
+    --ink: #e7eaf2;
+    --muted: #98a1b5;
+    --muted-strong: #c2c9d8;
+    --accent: #93a4ff;
+    --accent-ink: #12141c;
+    --accent-soft: #242a44;
+    --danger: #ff9a92;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Golos Text", -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .app {
+    display: grid;
+    grid-template-columns: 336px minmax(0, 1fr);
+    height: 100dvh;
+  }
+
+  /* ---------- panel ---------- */
+  .panel {
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .brand { padding: 18px 20px 14px; border-bottom: 1px solid var(--line-soft); }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .brand h1 {
+    margin: 4px 0 0;
+    text-wrap: balance;
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+  }
+  .brand .mark {
+    font-family: "Caveat", cursive;
+    font-size: 24px;
+    color: var(--muted);
+    line-height: 1;
+    margin-left: 2px;
+    vertical-align: -2px;
+  }
+
+  .sec { padding: 16px 20px; border-bottom: 1px solid var(--line-soft); display: grid; gap: 10px; }
+  .sec > h2 {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .sec > h2 .num {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--accent);
+  }
+  .hint { margin: 0; color: var(--muted); font-size: 12.5px; }
+
+  /* Один источник размеров для всех интерактивных контролов: высота и шрифт
+     задаются здесь, а не в каждом правиле по отдельности. */
+  .btn, input[type="text"], input[type="date"], .tab {
+    height: var(--ctl-h);
+    font-size: var(--ctl-fs);
+    border-radius: var(--r);
+  }
+  .drop {
+    min-height: var(--ctl-h);
+    font-size: var(--ctl-fs);
+    border-radius: var(--r);
+  }
+  .btn {
+    border: 1px solid var(--line);
+    background: var(--raised);
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: 500;
+    touch-action: manipulation;
+    /* фон намеренно без перехода: при смене темы он анимируется и на 120 мс
+       остаётся от прошлой темы — тёмный текст на светлой заливке */
+    transition: border-color .12s;
+  }
+  .btn:hover { border-color: var(--muted); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.ghost { background: transparent; border-color: transparent; color: var(--muted); padding: 6px 10px; }
+  .btn.ghost:hover { color: var(--ink); background: var(--accent-soft); }
+  .btn.wide { width: 100%; }
+  .btn[disabled] { opacity: .45; cursor: not-allowed; }
+  .btn.danger { color: var(--danger); }
+
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .row > * { min-width: 0; }
+  .row.split > * { flex: 1; }
+
+  input[type="text"], input[type="date"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    background: var(--raised);
+  }
+  input[type="range"] { width: 100%; height: 24px; accent-color: var(--accent); touch-action: manipulation; }
+
+  .tabs { display: flex; gap: 2px; padding: 3px; background: var(--ground); border-radius: var(--r); }
+  .tab {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    border-radius: 6px;
+    padding: 6px 4px;
+    cursor: pointer;
+    color: var(--muted-strong);
+    min-width: 0;
+    white-space: nowrap;
+    touch-action: manipulation;
+  }
+  .tab[aria-selected="true"] { background: var(--raised); color: var(--ink); box-shadow: var(--shadow); }
+
+  .pad {
+    width: 100%;
+    aspect-ratio: 8 / 3;
+    border: 1px dashed var(--line);
+    border-radius: var(--r);
+    background: var(--raised);
+    touch-action: none;
+    cursor: crosshair;
+    display: block;
+  }
+  .padwrap { position: relative; }
+  .padhint {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+    font-size: 13px;
+    pointer-events: none;
+    text-align: center;
+    padding: 0 12px;
+  }
+  .padwrap::after {
+    content: "";
+    position: absolute;
+    left: 12%; right: 12%; bottom: 26%;
+    border-bottom: 1px solid var(--line-soft);
+    pointer-events: none;
+  }
+  .preview {
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r);
+    background: var(--raised);
+    min-height: 96px;
+    display: grid;
+    place-items: center;
+    padding: 8px;
+  }
+  .preview img { max-height: 84px; max-width: 100%; object-fit: contain; }
+  .drop {
+    display: block;
+    width: 100%;
+    font: inherit;
+    font-size: var(--ctl-fs);
+    border: 1px dashed var(--line);
+    padding: 12px;
+    text-align: center;
+    color: var(--muted);
+    cursor: pointer;
+    background: var(--raised);
+    touch-action: manipulation;
+  }
+  .drop:hover, .drop.over { border-color: var(--accent); color: var(--ink); }
+
+  label.check { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 12.5px; cursor: pointer; }
+  label.check input { accent-color: var(--accent); }
+
+  .meta {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .foot {
+    margin-top: auto;
+    position: sticky;
+    bottom: 0;
+    padding: 12px 20px 14px;
+    display: grid;
+    gap: 6px;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+  }
+
+  /* ---------- viewer ---------- */
+  .viewer {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    justify-items: center;
+    align-content: start;
+  }
+  .pagewrap { display: grid; gap: 6px; justify-items: center; max-width: 100%; }
+  .page {
+    position: relative;
+    background: #fff;
+    box-shadow: var(--shadow);
+    border-radius: 2px;
+    max-width: 100%;
+  }
+  .page canvas { display: block; width: 100%; height: auto; border-radius: 2px; }
+  .overlay { position: absolute; inset: 0; }
+  .pagenum { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--muted); text-align: center; }
+
+  .item {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    outline: 1.5px dashed transparent;
+    outline-offset: 3px;
+  }
+  .item img { display: block; width: 100%; height: auto; pointer-events: none; }
+  .item:hover { outline-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+  .item.sel { outline-color: var(--accent); }
+  .item:active { cursor: grabbing; }
+  .item .grip {
+    position: absolute;
+    right: -7px;
+    bottom: -7px;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: var(--accent);
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.35);
+    cursor: nwse-resize;
+    touch-action: none;
+    display: none;
+  }
+  .item .grip::before { content: ""; position: absolute; inset: -6px; }
+  .item.sel .grip { display: block; }
+
+  #cropcv {
+    display: block;
+    max-width: 100%;
+    border-radius: var(--r);
+    border: 1px solid var(--line);
+    touch-action: none;
+    cursor: crosshair;
+  }
+  .rng { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); }
+  .preview.paper {
+    background:
+      linear-gradient(45deg, #eceff5 25%, transparent 25%, transparent 75%, #eceff5 75%) 0 0 / 14px 14px,
+      linear-gradient(45deg, #eceff5 25%, transparent 25%, transparent 75%, #eceff5 75%) 7px 7px / 14px 14px,
+      #ffffff;
+  }
+
+  .lib { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .sig {
+    position: relative;
+    background: #fff;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r);
+    background: var(--raised);
+    padding: 10px 8px 6px;
+    cursor: pointer;
+    display: grid;
+    gap: 4px;
+    justify-items: center;
+  }
+  .sig:hover { border-color: var(--accent); }
+  .sig img { max-height: 40px; max-width: 100%; }
+  .sig .nm { font-size: 10.5px; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sig .rm {
+    position: absolute; top: 1px; right: 3px;
+    border: 0; background: transparent; color: var(--muted);
+    cursor: pointer; font-size: 15px; line-height: 1; padding: 2px 5px; border-radius: 4px;
+  }
+  .sig .rm:hover { color: var(--danger); background: var(--accent-soft); }
+  .who { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  a.btn { display: block; text-align: center; text-decoration: none; }
+
+  .corner {
+    position: absolute;
+    padding: 0;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0 -9px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,.45);
+    cursor: grab;
+    touch-action: none;
+  }
+  .corner:active { cursor: grabbing; }
+
+  .empty { color: var(--muted); text-align: center; padding: 64px 20px; max-width: 34ch; }
+  .badge {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  @media (max-width: 880px) {
+    .app { display: flex; flex-direction: column; height: auto; }
+    .viewer {
+      order: -1;
+      height: 52vh;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      padding: 12px;
+      background: var(--ground);
+      border-bottom: 1px solid var(--line);
+    }
+    .panel { border-right: 0; }
+    .foot { position: static; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <aside class="panel">
+    <div class="brand">
+      <div class="eyebrow">Локально в браузере</div>
+      <h1>Подпись на документе <span class="mark" aria-hidden="true">✓</span></h1>
+    </div>
+
+    <section class="sec">
+      <h2>Документ <span class="num">01</span></h2>
+      <button type="button" class="drop" id="drop">Перетащите PDF или нажмите, чтобы выбрать</button>
+      <div class="meta" id="docmeta">Открыт образец — загрузите свой PDF</div>
+      <input type="file" id="file" accept="application/pdf" hidden>
+    </section>
+
+    <section class="sec">
+      <h2>Подпись <span class="num">02</span></h2>
+      <div class="tabs" role="tablist" aria-label="Источник подписи">
+        <button class="tab" role="tab" id="tab-draw" aria-controls="pane-draw" aria-selected="true" data-mode="draw">Нарисовать</button>
+        <button class="tab" role="tab" id="tab-type" aria-controls="pane-type" aria-selected="false" tabindex="-1" data-mode="type">Ввести</button>
+        <button class="tab" role="tab" id="tab-upload" aria-controls="pane-upload" aria-selected="false" tabindex="-1" data-mode="upload">Загрузить</button>
+      </div>
+
+      <div data-pane="draw" id="pane-draw" role="tabpanel" aria-labelledby="tab-draw">
+        <div class="padwrap">
+          <canvas class="pad" id="pad" aria-label="Поле для рисования подписи"></canvas>
+          <div class="padhint" id="padhint">Нарисуйте подпись мышью или пальцем</div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn ghost" id="padclear">Стереть</button>
+          <button class="btn" id="padadd" style="margin-left:auto">Поставить подпись</button>
+        </div>
+      </div>
+
+      <div data-pane="type" id="pane-type" role="tabpanel" aria-labelledby="tab-type" hidden>
+        <label class="rng" for="signtext">Текст подписи
+          <input type="text" id="signtext" name="signature-text" autocomplete="off" spellcheck="false"
+                 placeholder="И. Волынкин…" value="И. Волынкин">
+        </label>
+        <div class="preview paper" id="signprev" style="margin-top:8px"></div>
+        <button class="btn wide" id="signadd" style="margin-top:8px">Поставить подпись</button>
+      </div>
+
+      <div data-pane="upload" id="pane-upload" role="tabpanel" aria-labelledby="tab-upload" hidden>
+        <button type="button" class="drop" id="sigdrop">Фото или скан листа с подписями</button>
+        <input type="file" id="sigfile" accept="image/*" hidden>
+
+        <div id="editor" hidden style="display:grid;gap:8px;margin-top:8px">
+          <canvas id="cropcv" tabindex="0" role="application"
+                  aria-label="Кадр: рамкой выделяется одна подпись. Стрелки двигают рамку, Shift со стрелками меняет размер"></canvas>
+          <p class="hint">Обведите рамкой одну подпись — ниже видно, что попадёт в документ.</p>
+          <label class="rng" for="thr">
+            <span class="row" style="gap:6px">Убрать фон <span class="meta" id="thrval" style="margin-left:auto"></span></span>
+            <input type="range" id="thr" min="0" max="100" step="1" value="55">
+          </label>
+          <div class="row">
+            <button class="btn ghost" id="cropall">Весь кадр</button>
+            <span class="meta" id="cropmeta" style="margin-left:auto"></span>
+          </div>
+          <div class="preview paper" id="upprev"></div>
+        </div>
+
+        <button class="btn wide" id="upadd" style="margin-top:8px" disabled>Поставить подпись</button>
+      </div>
+    </section>
+
+    <section class="sec" id="libsec" hidden>
+      <h2>Мои подписи <span class="num">03</span></h2>
+      <div id="libbody"></div>
+    </section>
+
+    <section class="sec">
+      <h2>Расшифровка и дата <span class="num">04</span></h2>
+      <div class="row split">
+        <label class="rng" for="fio" style="flex:1">Расшифровка
+          <input type="text" id="fio" name="signer-name" autocomplete="name" spellcheck="false"
+                 placeholder="Волынкин И. В.…" value="Волынкин И. В.">
+        </label>
+        <button class="btn" id="fioadd" style="flex:0 0 auto;align-self:end">ФИО</button>
+      </div>
+      <div class="row split">
+        <label class="rng" for="date" style="flex:1">Дата
+          <input type="date" id="date" name="sign-date">
+        </label>
+        <button class="btn" id="dateadd" style="flex:0 0 auto;align-self:end">Дата</button>
+      </div>
+      <p class="hint">Штампы ставятся на видимую страницу. Дальше: тянуть мышью — двигать, за угол рамки — менять размер, стрелки — сдвиг на пункт.</p>
+    </section>
+
+    <section class="sec">
+      <h2>Вид на бумаге <span class="num">05</span></h2>
+      <button type="button" class="drop" id="sheetdrop">Фото пустого листа</button>
+      <input type="file" id="sheetfile" accept="image/*" hidden>
+      <p class="hint">Документ впечатается в снимок — видно, как он будет выглядеть распечатанным. Углы рамки подгоняются по краям листа.</p>
+      <div class="row" id="sheetctl" hidden>
+        <button class="btn" id="sheetsave">Скачать PNG</button>
+        <button class="btn ghost danger" id="sheetclear" style="margin-left:auto">Убрать</button>
+      </div>
+    </section>
+
+    <section class="sec" id="selpanel" hidden>
+      <h2>Выбранный штамп</h2>
+      <div class="meta" id="selmeta">—</div>
+      <label class="rng" for="size">Размер
+        <input type="range" id="size" min="4" max="70" step="1">
+      </label>
+      <div class="row">
+        <button class="btn ghost danger" id="del" style="margin-left:auto">Удалить</button>
+      </div>
+    </section>
+
+    <div class="foot">
+      <button class="btn primary wide" id="save">Скачать подписанный PDF</button>
+      <p class="hint" id="status" role="status" aria-live="polite">Файл не покидает браузер: PDF собирается на этой странице.</p>
+    </div>
+  </aside>
+
+  <main class="viewer" id="viewer" tabindex="0" aria-label="Документ — прокручивается стрелками">
+    <div class="empty">Загрузка образца…</div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const INK = "#12203f";              // чернила: тёмно-синий, как в реальной подписи
+let srcBytes = null;                // исходный PDF (Uint8Array), не отдаём его pdf.js напрямую
+let pages = [];                     // {el, overlay, rot}
+let items = [];                     // {id,type,page,x,y,w,dataUrl,aspect}
+let sel = null;
+let uploaded = null;                // canvas загруженной подписи
+let nextId = 1;
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+/* ---------- утилиты изображений ---------- */
+
+// обрезаем прозрачные поля, иначе штамп на странице «плавает» в пустой рамке
+function trim(c) {
+  const g = c.getContext("2d");
+  const d = g.getImageData(0, 0, c.width, c.height).data;
+  let x0 = c.width, y0 = c.height, x1 = -1, y1 = -1;
+  for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) {
+    if (d[(y * c.width + x) * 4 + 3] > 8) {
+      if (x < x0) x0 = x; if (x > x1) x1 = x;
+      if (y < y0) y0 = y; if (y > y1) y1 = y;
+    }
+  }
+  if (x1 < 0) return null;
+  const p = Math.round(Math.max(c.width, c.height) * 0.01);
+  x0 = Math.max(0, x0 - p); y0 = Math.max(0, y0 - p);
+  x1 = Math.min(c.width - 1, x1 + p); y1 = Math.min(c.height - 1, y1 + p);
+  const o = document.createElement("canvas");
+  o.width = x1 - x0 + 1; o.height = y1 - y0 + 1;
+  o.getContext("2d").drawImage(c, x0, y0, o.width, o.height, 0, 0, o.width, o.height);
+  return o;
+}
+
+function textCanvas(text, family, weight) {
+  const S = 4, PX = 44 * S;
+  const c = document.createElement("canvas");
+  let g = c.getContext("2d");
+  g.font = `${weight} ${PX}px ${family}`;
+  const w = Math.ceil(g.measureText(text).width) + PX * 0.5;
+  c.width = Math.max(8, w);
+  c.height = Math.round(PX * 1.7);
+  g = c.getContext("2d");
+  g.font = `${weight} ${PX}px ${family}`;
+  g.fillStyle = INK;
+  g.textBaseline = "middle";
+  g.fillText(text, PX * 0.25, c.height / 2);
+  return trim(c) || c;
+}
+
+/* ---------- рисование подписи ---------- */
+const pad = $("#pad");
+let pctx, drawing = false, last = null, padDirty = false;
+
+function sizePad() {
+  const r = pad.getBoundingClientRect();
+  if (!r.width) return;
+  const dpr = Math.min(3, window.devicePixelRatio || 1) * 2;
+  const keep = padDirty ? pad.toDataURL() : null;
+  pad.width = Math.round(r.width * dpr);
+  pad.height = Math.round(r.height * dpr);
+  pctx = pad.getContext("2d");
+  pctx.lineCap = pctx.lineJoin = "round";
+  pctx.strokeStyle = INK;
+  pctx.lineWidth = Math.max(2, pad.width / 200);
+  if (keep) { const i = new Image(); i.onload = () => pctx.drawImage(i, 0, 0, pad.width, pad.height); i.src = keep; }
+}
+new ResizeObserver(sizePad).observe(pad);
+
+function padPoint(e) {
+  const r = pad.getBoundingClientRect();
+  return { x: (e.clientX - r.left) / r.width * pad.width, y: (e.clientY - r.top) / r.height * pad.height };
+}
+pad.addEventListener("pointerdown", e => {
+  pad.setPointerCapture(e.pointerId);
+  drawing = true; padDirty = true; last = padPoint(e);
+  $("#padhint").hidden = true;
+  pctx.beginPath(); pctx.arc(last.x, last.y, pctx.lineWidth / 2, 0, 7); pctx.fillStyle = INK; pctx.fill();
+});
+pad.addEventListener("pointermove", e => {
+  if (!drawing) return;
+  const p = padPoint(e);
+  pctx.beginPath(); pctx.moveTo(last.x, last.y);
+  pctx.quadraticCurveTo(last.x, last.y, (last.x + p.x) / 2, (last.y + p.y) / 2);
+  pctx.stroke();
+  last = p;
+});
+addEventListener("pointerup", () => { drawing = false; });
+$("#padclear").onclick = () => {
+  pctx.clearRect(0, 0, pad.width, pad.height);
+  padDirty = false;
+  $("#padhint").hidden = false;
+};
+
+/* ---------- вкладки подписи ---------- */
+const tabs = [...document.querySelectorAll(".tab")];
+function selectTab(t) {
+  tabs.forEach(x => {
+    const on = x === t;
+    x.setAttribute("aria-selected", String(on));
+    x.tabIndex = on ? 0 : -1;
+  });
+  document.querySelectorAll("[data-pane]").forEach(p => p.hidden = p.dataset.pane !== t.dataset.mode);
+  if (t.dataset.mode === "draw") sizePad();
+  if (t.dataset.mode === "upload") fitEditor();
+}
+tabs.forEach(t => {
+  t.onclick = () => selectTab(t);
+  t.onkeydown = e => {
+    const d = { ArrowRight: 1, ArrowLeft: -1, Home: -99, End: 99 }[e.key];
+    if (!d) return;
+    e.preventDefault();
+    const i = Math.abs(d) === 99 ? (d > 0 ? tabs.length - 1 : 0)
+                                 : (tabs.indexOf(t) + d + tabs.length) % tabs.length;
+    selectTab(tabs[i]);
+    tabs[i].focus();
+  };
+});
+
+/* ---------- набранная подпись ---------- */
+function typedCanvas() { return textCanvas($("#signtext").value.trim() || " ", '"Caveat", cursive', 600); }
+function refreshTyped() {
+  const c = typedCanvas();
+  $("#signprev").innerHTML = "";
+  const i = new Image();
+  i.alt = "";
+  i.src = c.toDataURL();
+  $("#signprev").append(i);
+}
+$("#signtext").oninput = refreshTyped;
+
+/* ---------- загрузка: кроп + вычитание фона ---------- */
+let srcCanvas = null, crop = null, dragStart = null, thrTimer = null;
+const cropcv = $("#cropcv");
+
+function openEditor(file) {
+  const img = new Image();
+  img.onload = () => {
+    const cap = 2400;                       // восьмимегапиксельное фото целиком обрабатывать незачем
+    const k = Math.min(1, cap / Math.max(img.naturalWidth, img.naturalHeight));
+    srcCanvas = document.createElement("canvas");
+    srcCanvas.width = Math.round(img.naturalWidth * k);
+    srcCanvas.height = Math.round(img.naturalHeight * k);
+    srcCanvas.getContext("2d").drawImage(img, 0, 0, srcCanvas.width, srcCanvas.height);
+    URL.revokeObjectURL(img.src);
+    crop = { x: 0, y: 0, w: srcCanvas.width, h: srcCanvas.height };
+    $("#editor").hidden = false;
+    $("#upadd").disabled = false;
+    fitEditor();
+    processUpload();
+  };
+  img.src = URL.createObjectURL(file);
+}
+
+function fitEditor() {
+  if (!srcCanvas) return;
+  const box = cropcv.parentElement.getBoundingClientRect();
+  if (!box.width) return;
+  const scale = Math.min(box.width / srcCanvas.width, 300 / srcCanvas.height);
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cropcv.style.width = Math.round(srcCanvas.width * scale) + "px";
+  cropcv.width = Math.round(srcCanvas.width * scale * dpr);
+  cropcv.height = Math.round(srcCanvas.height * scale * dpr);
+  drawEditor();
+}
+
+function drawEditor() {
+  if (!srcCanvas) return;
+  const g = cropcv.getContext("2d");
+  g.drawImage(srcCanvas, 0, 0, cropcv.width, cropcv.height);
+  const kx = cropcv.width / srcCanvas.width, ky = cropcv.height / srcCanvas.height;
+  const x = crop.x * kx, y = crop.y * ky, w = crop.w * kx, h = crop.h * ky;
+  g.fillStyle = "rgba(8,12,26,.45)";
+  g.fillRect(0, 0, cropcv.width, y);
+  g.fillRect(0, y + h, cropcv.width, cropcv.height - y - h);
+  g.fillRect(0, y, x, h);
+  g.fillRect(x + w, y, cropcv.width - x - w, h);
+  g.strokeStyle = "#ffffff";
+  g.lineWidth = 2;
+  g.setLineDash([6, 4]);
+  g.strokeRect(x, y, w, h);
+  g.setLineDash([]);
+}
+
+function editorPoint(e) {
+  const b = cropcv.getBoundingClientRect();
+  return {
+    x: Math.max(0, Math.min(srcCanvas.width, (e.clientX - b.left) / b.width * srcCanvas.width)),
+    y: Math.max(0, Math.min(srcCanvas.height, (e.clientY - b.top) / b.height * srcCanvas.height))
+  };
+}
+
+function rectOf(a, b) {
+  return {
+    x: Math.round(Math.min(a.x, b.x)), y: Math.round(Math.min(a.y, b.y)),
+    w: Math.round(Math.abs(a.x - b.x)), h: Math.round(Math.abs(a.y - b.y))
+  };
+}
+
+cropcv.addEventListener("pointerdown", e => {
+  if (!srcCanvas) return;
+  e.preventDefault();
+  cropcv.setPointerCapture(e.pointerId);
+  dragStart = editorPoint(e);
+});
+cropcv.addEventListener("pointermove", e => {
+  if (!dragStart) return;
+  crop = rectOf(dragStart, editorPoint(e));
+  drawEditor();
+});
+cropcv.addEventListener("pointerup", e => {
+  if (!dragStart) return;
+  const r = rectOf(dragStart, editorPoint(e));
+  dragStart = null;
+  if (r.w < 12 || r.h < 12) return drawEditor();   // случайный клик — рамку не трогаем
+  crop = r;
+  drawEditor();
+  processUpload();
+});
+
+$("#cropall").onclick = () => {
+  if (!srcCanvas) return;
+  crop = { x: 0, y: 0, w: srcCanvas.width, h: srcCanvas.height };
+  drawEditor();
+  processUpload();
+};
+$("#thr").oninput = () => {
+  $("#thrval").textContent = $("#thr").value + "%";
+  clearTimeout(thrTimer);
+  thrTimer = setTimeout(processUpload, 150);
+};
+
+// Клавиатурная альтернатива перетаскиванию рамки: стрелки двигают, Shift — размер.
+cropcv.addEventListener("keydown", e => {
+  if (!srcCanvas) return;
+  const step = (e.altKey ? 1 : 20) * (srcCanvas.width / 600);
+  const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+  if (!d) return;
+  e.preventDefault();
+  if (e.shiftKey) {
+    crop.w = Math.max(24, Math.min(srcCanvas.width - crop.x, crop.w + d[0] * step));
+    crop.h = Math.max(24, Math.min(srcCanvas.height - crop.y, crop.h + d[1] * step));
+  } else {
+    crop.x = Math.max(0, Math.min(srcCanvas.width - crop.w, crop.x + d[0] * step));
+    crop.y = Math.max(0, Math.min(srcCanvas.height - crop.h, crop.y + d[1] * step));
+  }
+  drawEditor();
+  clearTimeout(thrTimer);
+  thrTimer = setTimeout(processUpload, 150);
+});
+
+function processUpload() {
+  if (!srcCanvas) return;
+  const c = document.createElement("canvas");
+  c.width = crop.w;
+  c.height = crop.h;
+  c.getContext("2d").drawImage(srcCanvas, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h);
+  const strength = +$("#thr").value;
+  uploaded = trim(strength ? inkify(c, strength) : c) || c;
+  const img = new Image();
+  img.alt = "";
+  img.src = uploaded.toDataURL("image/png");
+  $("#upprev").replaceChildren(img);
+  const whole = crop.w === srcCanvas.width && crop.h === srcCanvas.height;
+  $("#cropmeta").textContent = (whole ? "Кадр: весь снимок · " : "Кадр: выделение · ")
+    + uploaded.width + "\u00d7" + uploaded.height + " px";
+}
+
+// Бумагу на фотографии освещает неровно, поэтому фон оценивается по клеткам:
+// в каждой берём 80-й перцентиль яркости (это бумага, а не штрих) и растягиваем
+// билинейно. Один глобальный порог на таком кадре либо съедает линию, либо
+// оставляет серую муть.
+function localPaper(lum, w, h) {
+  const S = Math.max(12, Math.round(Math.max(w, h) / 20));
+  const cw = Math.ceil(w / S), ch = Math.ceil(h / S);
+  const hist = new Int32Array(cw * ch * 32), cnt = new Int32Array(cw * ch);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const k = ((y / S) | 0) * cw + ((x / S) | 0);
+      hist[k * 32 + ((lum[y * w + x] / 8) | 0)]++;
+      cnt[k]++;
+    }
+  }
+  const paper = new Float32Array(cw * ch);
+  for (let k = 0; k < cw * ch; k++) {
+    const need = cnt[k] * 0.8;
+    let acc = 0, b = 0;
+    for (; b < 31; b++) { acc += hist[k * 32 + b]; if (acc >= need) break; }
+    paper[k] = b * 8 + 4;
+  }
+  return { paper, cw, ch, S };
+}
+
+function inkify(c, strength) {
+  const g = c.getContext("2d");
+  const im = g.getImageData(0, 0, c.width, c.height), d = im.data;
+  const w = c.width, h = c.height, n = w * h;
+  const lum = new Float32Array(n);
+  for (let i = 0; i < n; i++) lum[i] = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
+
+  const grid = localPaper(lum, w, h);
+  const paper = grid.paper, cw = grid.cw, ch = grid.ch, S = grid.S;
+  const tone = paperTone(d, lum, n);        // собственный оттенок бумаги
+  const t = 62 - strength * 0.56;           // ползунок вправо -> порог ниже -> чище фон
+
+  for (let y = 0; y < h; y++) {
+    const fy = Math.min(ch - 1, y / S), y0 = fy | 0, y1 = Math.min(ch - 1, y0 + 1), wy = fy - y0;
+    for (let x = 0; x < w; x++) {
+      const fx = Math.min(cw - 1, x / S), x0 = fx | 0, x1 = Math.min(cw - 1, x0 + 1), wx = fx - x0;
+      const bg = paper[y0 * cw + x0] * (1 - wx) * (1 - wy) + paper[y0 * cw + x1] * wx * (1 - wy)
+               + paper[y1 * cw + x0] * (1 - wx) * wy + paper[y1 * cw + x1] * wx * wy;
+      const i = y * w + x, o = i * 4;
+      const a = Math.max(0, Math.min(255, Math.round((bg - lum[i] - t) * 255 / (t + 14))));
+      d[o + 3] = a;
+      if (!a) continue;
+      // Цвет пера = во сколько раз чернила гасят бумагу под ними. Деление снимает
+      // тёплый тон листа, без него синяя паста уезжает в серо-коричневый.
+      let r = INK_LUT[(Math.min(1, d[o]     / Math.max(1, bg * tone[0])) * 1023) | 0];
+      let gg = INK_LUT[(Math.min(1, d[o + 1] / Math.max(1, bg * tone[1])) * 1023) | 0];
+      let b = INK_LUT[(Math.min(1, d[o + 2] / Math.max(1, bg * tone[2])) * 1023) | 0];
+      const m = (r + gg + b) / 3;            // подъём насыщенности вокруг серого:
+      r = m + (r - m) * INK_CHROMA;          // чёрную ручку не красит, синюю возвращает синей
+      gg = m + (gg - m) * INK_CHROMA;
+      b = m + (b - m) * INK_CHROMA;
+      d[o] = Math.max(0, Math.min(255, r | 0));
+      d[o + 1] = Math.max(0, Math.min(255, gg | 0));
+      d[o + 2] = Math.max(0, Math.min(255, b | 0));
+    }
+  }
+  g.putImageData(im, 0, 0);
+  return c;
+}
+
+const INK_GAMMA = 1.4, INK_CHROMA = 2.2;
+// t^gamma в таблице: возводить в степень для каждого канала каждого пикселя дорого
+const INK_LUT = Float32Array.from({ length: 1024 }, (_, i) => 255 * Math.pow(i / 1023, INK_GAMMA));
+
+// Оттенок бумаги — средний RGB светлой пятой части кадра, поделённый на её яркость.
+function paperTone(d, lum, n) {
+  const hist = new Int32Array(64);
+  for (let i = 0; i < n; i++) hist[(lum[i] / 4) | 0]++;
+  let acc = 0, bin = 63;
+  for (let b = 0; b < 64; b++) { acc += hist[b]; if (acc >= n * 0.8) { bin = b; break; } }
+  const cut = bin * 4;
+  let r = 0, g = 0, bl = 0, m = 0;
+  for (let i = 0; i < n; i++) {
+    if (lum[i] < cut) continue;
+    r += d[i * 4]; g += d[i * 4 + 1]; bl += d[i * 4 + 2]; m++;
+  }
+  if (!m) return [1, 1, 1];
+  r /= m; g /= m; bl /= m;
+  const l = Math.max(1, 0.299 * r + 0.587 * g + 0.114 * bl);
+  return [r / l, g / l, bl / l];
+}
+
+hookPicker($("#sigdrop"), $("#sigfile"), openEditor);
+
+function hookPicker(zone, input, cb) {
+  zone.onclick = () => input.click();   // <button> сам обрабатывает Enter/Space
+  input.onchange = () => input.files[0] && cb(input.files[0]);
+  zone.ondragover = e => { e.preventDefault(); zone.classList.add("over"); };
+  zone.ondragleave = () => zone.classList.remove("over");
+  zone.ondrop = e => { e.preventDefault(); zone.classList.remove("over"); e.dataTransfer.files[0] && cb(e.dataTransfer.files[0]); };
+}
+
+/* ---------- штампы ---------- */
+const DEFAULT_W = { sign: 0.26, name: 0.22, date: 0.14 };
+// раскладка строки подписания в наших документах: подпись / расшифровка / дата
+const DEFAULT_X = { sign: 0.28, name: 0.58, date: 0.82 };
+const LABEL = { sign: "подпись", name: "ФИО", date: "дата" };
+
+function visiblePage() {
+  const mid = $("#viewer").getBoundingClientRect().top + $("#viewer").clientHeight / 2;
+  let best = 0, bestD = Infinity;
+  pages.forEach((p, i) => {
+    const r = p.el.getBoundingClientRect();
+    const d = Math.abs((r.top + r.bottom) / 2 - mid);
+    if (d < bestD) { bestD = d; best = i; }
+  });
+  return best;
+}
+
+function addItem(type, canvas) {
+  if (!pages.length) return;
+  const c = trim(canvas) || canvas;
+  items.push({
+    id: nextId++, type, page: visiblePage(), x: DEFAULT_X[type], y: 0.62,
+    w: DEFAULT_W[type], dataUrl: c.toDataURL("image/png"), aspect: c.height / c.width
+  });
+  sel = items[items.length - 1].id;
+  renderItems();
+  document.getElementById("it" + sel)?.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+$("#padadd").onclick = () => { if (padDirty) addItem("sign", pad); else flash("Сначала нарисуйте подпись"); };
+$("#signadd").onclick = () => addItem("sign", typedCanvas());
+$("#upadd").onclick = () => uploaded && addItem("sign", uploaded);
+$("#fioadd").onclick = () => {
+  const v = $("#fio").value.trim();
+  v ? addItem("name", textCanvas(v, '"Golos Text", sans-serif', 500)) : flash("Введите ФИО");
+};
+$("#dateadd").onclick = () => {
+  const v = $("#date").value;
+  if (!v) return flash("Выберите дату");
+  const [y, m, d] = v.split("-");
+  addItem("date", textCanvas(`${d}.${m}.${y}`, '"Golos Text", sans-serif', 500));
+};
+
+function renderItems() {
+  pages.forEach(p => p.overlay.innerHTML = "");
+  for (const it of items) {
+    const p = pages[it.page];
+    if (!p) continue;
+    const el = document.createElement("div");
+    el.className = "item" + (it.id === sel ? " sel" : "");
+    el.id = "it" + it.id;
+    el.title = LABEL[it.type];
+    const img = document.createElement("img");
+    img.src = it.dataUrl;
+    img.alt = LABEL[it.type] + " на странице " + (it.page + 1);
+    el.append(img);
+    const grip = document.createElement("div");
+    grip.className = "grip";
+    grip.title = "Потянуть — изменить размер";
+    grip.addEventListener("pointerdown", e => startResize(e, it, el));
+    el.append(grip);
+    place(el, it);
+    el.addEventListener("pointerdown", e => startDrag(e, it, el));
+    p.overlay.append(el);
+  }
+  syncSelPanel();
+  scheduleMock();
+}
+
+function place(el, it) {
+  scheduleMock();
+  el.style.left = it.x * 100 + "%";
+  el.style.top = it.y * 100 + "%";
+  el.style.width = it.w * 100 + "%";
+}
+
+function startDrag(e, it, el) {
+  e.preventDefault();
+  sel = it.id;
+  document.querySelectorAll(".item").forEach(n => n.classList.toggle("sel", n === el));
+  syncSelPanel();
+  const rect = pages[it.page].el.getBoundingClientRect();
+  const dx = e.clientX - (rect.left + it.x * rect.width);
+  const dy = e.clientY - (rect.top + it.y * rect.height);
+  try { el.setPointerCapture(e.pointerId); } catch {}   // указателя может уже не быть — не ронять жест
+  const move = ev => {
+    it.x = Math.min(1, Math.max(0, (ev.clientX - dx - rect.left) / rect.width));
+    it.y = Math.min(1, Math.max(0, (ev.clientY - dy - rect.top) / rect.height));
+    place(el, it);
+    syncSelPanel();
+  };
+  const up = () => { el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); };
+  el.addEventListener("pointermove", move);
+  el.addEventListener("pointerup", up);
+}
+
+// Тянем за правый нижний угол: левый верхний край штампа остаётся на месте,
+// поэтому центр (а по нему и считается позиция) сдвигается на половину прироста.
+function startResize(e, it, el) {
+  e.preventDefault();
+  e.stopPropagation();
+  sel = it.id;
+  document.querySelectorAll(".item").forEach(n => n.classList.toggle("sel", n === el));
+  const rect = pages[it.page].el.getBoundingClientRect();
+  const x0 = e.clientX, w0 = it.w;
+  try { el.setPointerCapture(e.pointerId); } catch {}   // указателя может уже не быть — не ронять жест
+  const move = ev => {
+    const nw = Math.min(0.9, Math.max(0.04, w0 + (ev.clientX - x0) / rect.width));
+    const dw = nw - it.w;
+    it.x = Math.min(1, Math.max(0, it.x + dw / 2));
+    it.y = Math.min(1, Math.max(0, it.y + dw * rect.width * it.aspect / rect.height / 2));
+    it.w = nw;
+    place(el, it);
+    syncSelPanel();
+  };
+  const up = () => {
+    el.removeEventListener("pointermove", move);
+    el.removeEventListener("pointerup", up);
+  };
+  el.addEventListener("pointermove", move);
+  el.addEventListener("pointerup", up);
+}
+
+function selItem() { return items.find(i => i.id === sel) || null; }
+
+function syncSelPanel() {
+  const it = selItem();
+  $("#selpanel").hidden = !it;
+  if (!it) return;
+  $("#selmeta").textContent = `${LABEL[it.type]} · стр. ${it.page + 1} · x ${(it.x * 100).toFixed(0)}%`
+    + ` · y ${(it.y * 100).toFixed(0)}% · ширина ${Math.round(it.w * 100)}%`;
+  $("#size").value = Math.round(it.w * 100);
+}
+$("#size").oninput = () => {
+  const it = selItem(); if (!it) return;
+  it.w = +$("#size").value / 100;
+  place(document.getElementById("it" + it.id), it);
+  syncSelPanel();
+};
+$("#del").onclick = () => { items = items.filter(i => i.id !== sel); sel = null; renderItems(); };
+
+addEventListener("keydown", e => {
+  const it = selItem();
+  if (!it || /input|textarea/i.test(e.target.tagName)) return;
+  if (e.key === "Delete" || e.key === "Backspace") { $("#del").click(); e.preventDefault(); return; }
+  const step = e.shiftKey ? 0.01 : 0.002;
+  const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+  if (!d) return;
+  e.preventDefault();
+  it.x = Math.min(1, Math.max(0, it.x + d[0]));
+  it.y = Math.min(1, Math.max(0, it.y + d[1]));
+  place(document.getElementById("it" + it.id), it);
+  syncSelPanel();
+});
+
+/* ---------- загрузка и показ PDF ---------- */
+let pdfDocProxy = null, docName = "";
+
+async function openPdf(bytes, name) {
+  srcBytes = bytes;
+  items = [];
+  sel = null;
+  // pdf.js забирает буфер себе — отдаём копию
+  pdfDocProxy = await pdfjsLib.getDocument({ data: bytes.slice(0), disableFontFace: true, isEvalSupported: false }).promise;
+  docName = name;
+  await renderPages();
+  $("#docmeta").textContent = `${name} · ${pdfDocProxy.numPages} стр.`;
+  $("#drop").textContent = "Заменить PDF — перетащите или нажмите";
+  mountMock();
+  scheduleMock();
+}
+
+// Отрисовка отделена от загрузки: при изменении ширины окна страницы надо
+// перерисовать, иначе документ остаётся в масштабе старого вьюпорта —
+// после поворота телефона он либо не влезает, либо занимает треть экрана.
+async function renderPages() {
+  if (!pdfDocProxy) return;
+  const viewer = $("#viewer");
+  viewer.querySelectorAll(".pagewrap:not(#mockwrap), .empty").forEach(n => n.remove());
+  pages = [];
+  const width = Math.max(120, Math.min(viewer.clientWidth - 48, 900));
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  for (let n = 1; n <= pdfDocProxy.numPages; n++) {
+    const page = await pdfDocProxy.getPage(n);
+    const base = page.getViewport({ scale: 1 });
+    const vp = page.getViewport({ scale: width / base.width * dpr });
+    const wrap = document.createElement("div");
+    wrap.className = "pagewrap";
+    const pd = document.createElement("div");
+    pd.className = "page";
+    pd.style.width = Math.round(vp.width / dpr) + "px";
+    const canvas = document.createElement("canvas");
+    canvas.width = vp.width;
+    canvas.height = vp.height;
+    const overlay = document.createElement("div");
+    overlay.className = "overlay";
+    pd.append(canvas, overlay);
+    const num = document.createElement("div");
+    num.className = "pagenum";
+    num.textContent = `${n} / ${pdfDocProxy.numPages} · ${Math.round(base.width * 25.4 / 72)}×${Math.round(base.height * 25.4 / 72)} мм`;
+    wrap.append(pd, num);
+    viewer.append(wrap);
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+    pages.push({ el: pd, overlay });
+  }
+  renderItems();
+}
+
+let resizeTimer, lastWidth = innerWidth;
+addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(async () => {
+    if (innerWidth === lastWidth) return;
+    lastWidth = innerWidth;
+    fitEditor();
+    fitMock();
+    await renderPages();
+    scheduleMock();
+  }, 200);
+});
+
+hookPicker($("#drop"), $("#file"), async f => {
+  const buf = new Uint8Array(await f.arrayBuffer());
+  try {
+    await openPdf(buf, f.name);
+    flash("Документ открыт");
+  } catch (err) {
+    flash("Не удалось открыть PDF: " + err.message);
+  }
+});
+
+/* ---------- образец ---------- */
+async function sampleBytes() {
+  const W = 595.28, H = 841.89, S = 2;
+  const c = document.createElement("canvas");
+  c.width = W * S; c.height = H * S;
+  const g = c.getContext("2d");
+  g.fillStyle = "#ffffff"; g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = "#111111";
+  const M = 64 * S;
+  const line = (t, y, size, weight, color) => {
+    g.font = `${weight} ${size * S}px "Golos Text", sans-serif`;
+    g.fillStyle = color || "#111111";
+    g.fillText(t, M, y * S);
+  };
+  line("ОБРАЗЕЦ — загрузите свой PDF слева", 70, 9.5, 500, "#8a90a0");
+  line("Акт приёма-передачи оборудования № 14/2026", 110, 17, 600);
+  line("г. Санкт-Петербург", 140, 11, 400, "#555b6b");
+  line("Исполнитель передал, а Заказчик принял оборудование в количестве 3 (трёх) единиц", 190, 11, 400);
+  line("согласно спецификации. Претензий по комплектности и внешнему виду не имеется.", 212, 11, 400);
+  line("Стороны:", 262, 11, 500);
+  line("Исполнитель — ООО «Пример», ИНН 7800000000", 286, 11, 400);
+  line("Заказчик — ООО «Образец», ИНН 7810000000", 308, 11, 400);
+  line("Подписи сторон", 620, 11, 500);
+  g.strokeStyle = "#c9cdd8"; g.lineWidth = 1 * S;
+  [700, 740].forEach(y => {
+    g.beginPath(); g.moveTo(M, y * S); g.lineTo(260 * S, y * S);
+    g.moveTo(300 * S, y * S); g.lineTo(430 * S, y * S);
+    g.moveTo(460 * S, y * S); g.lineTo(531 * S, y * S);
+    g.stroke();
+  });
+  line("подпись", 714, 8.5, 400, "#8a90a0");
+  g.font = `400 ${8.5 * S}px "Golos Text", sans-serif`;
+  g.fillStyle = "#8a90a0";
+  g.fillText("расшифровка (ФИО)", 300 * S, 714 * S);
+  g.fillText("дата", 460 * S, 714 * S);
+  g.fillText("подпись", M, 754 * S);
+  g.fillText("расшифровка (ФИО)", 300 * S, 754 * S);
+  g.fillText("дата", 460 * S, 754 * S);
+
+  const doc = await PDFLib.PDFDocument.create();
+  const png = await doc.embedPng(c.toDataURL("image/png"));
+  doc.addPage([W, H]).drawImage(png, { x: 0, y: 0, width: W, height: H });
+  return doc.save();
+}
+
+/* ---------- сборка PDF ---------- */
+// Ставим PNG-штамп в систему координат страницы с учётом /Rotate.
+function placement(it, mw, mh, rot) {
+  let Xc, Yc, L;
+  if (rot === 90) { Xc = it.y * mw; Yc = it.x * mh; L = mh; }
+  else if (rot === 180) { Xc = mw - it.x * mw; Yc = it.y * mh; L = mw; }
+  else if (rot === 270) { Xc = mw - it.y * mw; Yc = mh - it.x * mh; L = mh; }
+  else { Xc = it.x * mw; Yc = mh - it.y * mh; L = mw; }
+  const w = it.w * L, h = w * it.aspect;
+  const t = rot * Math.PI / 180, cos = Math.cos(t), sin = Math.sin(t);
+  return { x: Xc - (w / 2) * cos + (h / 2) * sin, y: Yc - (w / 2) * sin - (h / 2) * cos, width: w, height: h };
+}
+
+$("#save").onclick = async () => {
+  if (!srcBytes) return flash("Сначала откройте PDF");
+  if (!items.length) return flash("Добавьте хотя бы подпись");
+  $("#save").disabled = true;
+  try {
+    const doc = await PDFLib.PDFDocument.load(srcBytes);
+    const pgs = doc.getPages();
+    for (const it of items) {
+      const page = pgs[it.page];
+      if (!page) continue;
+      // ponytail: берём MediaBox; страницы со смещённым CropBox не учитываем
+      const { width: mw, height: mh } = page.getSize();
+      const rot = ((page.getRotation().angle % 360) + 360) % 360;
+      const png = await doc.embedPng(it.dataUrl);
+      page.drawImage(png, { ...placement(it, mw, mh, rot), rotate: PDFLib.degrees(rot) });
+    }
+    const out = await doc.save();
+    const name = ($("#docmeta").textContent.split(" · ")[0] || "документ").replace(/\.pdf$/i, "") + " — подписан.pdf";
+    await saveFile(name, new Blob([out], { type: "application/pdf" }));
+  } catch (e) {
+    flash("Ошибка сборки: " + e.message);
+  }
+  $("#save").disabled = false;
+};
+
+async function saveFile(name, blob) {
+  const dl = window.claude?.use ? await window.claude.use("downloads") : null;
+  if (dl) {
+    try { await dl.save({ filename: name, data: blob }); flash("Файл сохранён"); }
+    catch (e) { flash(e.code === "declined" ? "Сохранение отменено" : "Не удалось сохранить: " + e.message); }
+    return;
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  flash("Файл скачан");
+}
+
+let flashT;
+function flash(msg) {
+  $("#status").textContent = msg;
+  clearTimeout(flashT);
+  flashT = setTimeout(() => { $("#status").textContent = "Файл не покидает браузер: PDF собирается на этой странице."; }, 4000);
+}
+
+/* ---------- личные подписи (единственное, ради чего нужен вход) ---------- */
+const lib = $("#libbody");
+
+function currentSigCanvas() {
+  const mode = document.querySelector('.tab[aria-selected="true"]').dataset.mode;
+  if (mode === "draw") return padDirty ? pad : null;
+  if (mode === "type") return $("#signtext").value.trim() ? typedCanvas() : null;
+  return uploaded;
+}
+
+async function initLibrary() {
+  let r;
+  try { r = await fetch("/api/me"); } catch { return; }   // хранилища нет (артефакт, локальный файл) — секции нет
+  if (r.status === 404) return;
+  $("#libsec").hidden = false;
+  if (r.status === 401) {
+    lib.innerHTML =
+      '<p class="hint">Без входа инструмент работает целиком — вход нужен только чтобы держать свои подписи под рукой и ставить их в один клик.</p>' +
+      '<a class="btn primary wide" style="margin-top:8px" href="/oauth2/start?rd=%2F">Войти через Google</a>';
+    return;
+  }
+  const { email } = await r.json();
+  lib.innerHTML =
+    '<div class="lib" id="libgrid"></div>' +
+    '<p class="hint" id="libempty" hidden>Пока пусто. Нарисуйте, наберите или загрузите подпись и нажмите «Сохранить текущую».</p>' +
+    '<button class="btn wide" id="libsave" style="margin-top:8px">Сохранить текущую подпись</button>' +
+    '<div class="row" style="margin-top:6px"><span class="who" id="libwho"></span>' +
+    '<a class="btn ghost" style="margin-left:auto" href="/oauth2/sign_out?rd=%2F">Выйти</a></div>';
+  $("#libwho").textContent = email;
+  $("#libsave").onclick = saveSignature;
+  await refreshLibrary();
+}
+
+async function refreshLibrary() {
+  const grid = $("#libgrid");
+  const items = await (await fetch("/api/signatures")).json();
+  grid.innerHTML = "";
+  $("#libempty").hidden = items.length > 0;
+  if (!items.length) return;
+  for (const it of items) {
+    const el = document.createElement("div");
+    el.className = "sig";
+    el.title = "Поставить на документ";
+    el.innerHTML = '<img alt=""><span class="nm"></span><button class="rm" title="Удалить">×</button>';
+    el.querySelector("img").src = it.data;
+    el.querySelector(".nm").textContent = it.name;
+    el.onclick = e => { if (!e.target.closest(".rm")) placeSaved(it); };
+    el.querySelector(".rm").onclick = async () => {
+      if (!confirm(`Удалить подпись «${it.name}»? Отменить будет нельзя.`)) return;
+      await fetch("/api/signatures/" + it.id, { method: "DELETE" });
+      flash("Подпись удалена");
+      refreshLibrary();
+    };
+    grid.append(el);
+  }
+}
+
+function placeSaved(it) {
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement("canvas");
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    c.getContext("2d").drawImage(img, 0, 0);
+    addItem("sign", c);
+  };
+  img.src = it.data;
+}
+
+async function saveSignature() {
+  const c = currentSigCanvas();
+  if (!c) return flash("Сначала нарисуйте, наберите или загрузите подпись");
+  const t = trim(c) || c;
+  const name = ($("#fio").value.trim() || "Подпись") + " · " + new Date().toLocaleDateString("ru-RU");
+  const r = await fetch("/api/signatures", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, data: t.toDataURL("image/png") })
+  });
+  if (!r.ok) return flash((await r.json()).error || "Не удалось сохранить");
+  flash("Подпись сохранена");
+  refreshLibrary();
+}
+
+/* ---------- вид на бумаге ---------- */
+let sheet = null;          // фотография листа (canvas)
+let quad = null;           // четыре угла листа в координатах фотографии
+let mockDirty = false, mockBusy = false;
+const imgCache = new Map();
+
+function openSheet(file) {
+  const img = new Image();
+  img.onload = () => {
+    const cap = 1800;
+    const k = Math.min(1, cap / Math.max(img.naturalWidth, img.naturalHeight));
+    sheet = document.createElement("canvas");
+    sheet.width = Math.round(img.naturalWidth * k);
+    sheet.height = Math.round(img.naturalHeight * k);
+    sheet.getContext("2d").drawImage(img, 0, 0, sheet.width, sheet.height);
+    URL.revokeObjectURL(img.src);
+    const mx = sheet.width * 0.03, my = sheet.height * 0.03;
+    quad = [
+      { x: mx, y: my }, { x: sheet.width - mx, y: my },
+      { x: sheet.width - mx, y: sheet.height - my }, { x: mx, y: sheet.height - my }
+    ];
+    $("#sheetctl").hidden = false;
+    mountMock();
+    scheduleMock();
+  };
+  img.src = URL.createObjectURL(file);
+}
+
+function mountMock() {
+  if (!sheet || document.getElementById("mockwrap")) return;
+  const wrap = document.createElement("div");
+  wrap.className = "pagewrap";
+  wrap.id = "mockwrap";
+  wrap.innerHTML =
+    '<div class="page" id="mockpage"><canvas id="mockcv"></canvas><div class="overlay" id="mockov"></div></div>' +
+    '<div class="pagenum">так это будет выглядеть на бумаге — тяните точки по углам листа</div>';
+  $("#viewer").prepend(wrap);
+  fitMock();
+  const cv = $("#mockcv");
+  cv.width = sheet.width;
+  cv.height = sheet.height;
+  const CORNER_NAME = ["левый верхний", "правый верхний", "правый нижний", "левый нижний"];
+  quad.forEach((_, i) => {
+    const h = document.createElement("button");
+    h.type = "button";
+    h.className = "corner";
+    h.dataset.i = i;
+    h.setAttribute("aria-label", CORNER_NAME[i] + " угол листа — стрелки двигают");
+    h.addEventListener("pointerdown", e => startCorner(e, i, h));
+    h.addEventListener("keydown", e => {
+      const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+      if (!d) return;
+      e.preventDefault();
+      const step = (e.shiftKey ? 20 : 4) * (sheet.width / 600);
+      quad[i] = {
+        x: Math.max(0, Math.min(sheet.width, quad[i].x + d[0] * step)),
+        y: Math.max(0, Math.min(sheet.height, quad[i].y + d[1] * step))
+      };
+      placeCorners();
+      scheduleMock();
+    });
+    $("#mockov").append(h);
+  });
+  placeCorners();
+}
+
+function fitMock() {
+  const page = document.getElementById("mockpage");
+  if (!page || !sheet) return;
+  const view = Math.max(120, $("#viewer").clientWidth - 48);
+  page.style.width = Math.round(Math.min(view, 900, sheet.width)) + "px";
+}
+
+function placeCorners() {
+  if (!quad) return;
+  document.querySelectorAll("#mockov .corner").forEach(h => {
+    const q = quad[+h.dataset.i];
+    h.style.left = (q.x / sheet.width * 100) + "%";
+    h.style.top = (q.y / sheet.height * 100) + "%";
+  });
+}
+
+function startCorner(e, i, el) {
+  e.preventDefault();
+  e.stopPropagation();
+  try { el.setPointerCapture(e.pointerId); } catch {}
+  const rect = $("#mockpage").getBoundingClientRect();
+  const move = ev => {
+    quad[i] = {
+      x: Math.max(0, Math.min(sheet.width, (ev.clientX - rect.left) / rect.width * sheet.width)),
+      y: Math.max(0, Math.min(sheet.height, (ev.clientY - rect.top) / rect.height * sheet.height))
+    };
+    placeCorners();
+    scheduleMock();
+  };
+  const up = () => {
+    el.removeEventListener("pointermove", move);
+    el.removeEventListener("pointerup", up);
+  };
+  el.addEventListener("pointermove", move);
+  el.addEventListener("pointerup", up);
+}
+
+function scheduleMock() {
+  if (!sheet || mockBusy) { mockDirty = !!sheet; return; }
+  mockDirty = false;
+  mockBusy = true;
+  requestAnimationFrame(() => {
+    try { renderMock(); } finally {
+      mockBusy = false;
+      if (mockDirty) scheduleMock();
+    }
+  });
+}
+
+// Страница + поставленные штампы в одном холсте — то, что «печатается» на фото.
+function flattenPage(n) {
+  const src = pages[n] && pages[n].el.querySelector("canvas");
+  if (!src) return null;
+  const c = document.createElement("canvas");
+  c.width = src.width;
+  c.height = src.height;
+  const g = c.getContext("2d");
+  g.drawImage(src, 0, 0);
+  for (const it of items) {
+    if (it.page !== n) continue;
+    let img = imgCache.get(it.dataUrl);
+    if (!img) {
+      img = new Image();
+      img.onload = scheduleMock;                 // подгрузится — перерисуем
+      img.src = it.dataUrl;
+      imgCache.set(it.dataUrl, img);
+    }
+    if (!img.complete || !img.naturalWidth) continue;
+    const w = it.w * c.width, h = w * it.aspect;
+    g.drawImage(img, it.x * c.width - w / 2, it.y * c.height - h / 2, w, h);
+  }
+  return c;
+}
+
+function renderMock() {
+  const cv = $("#mockcv");
+  if (!cv || !sheet) return;
+  const g = cv.getContext("2d");
+  g.globalCompositeOperation = "source-over";
+  g.drawImage(sheet, 0, 0);
+  const doc = flattenPage(visiblePage());
+  if (!doc) return;
+  // Умножение вместо наложения: белая бумага документа пропускает фактуру и
+  // тени снимка, а текст ложится поверх — так это и выглядит на печати.
+  g.globalCompositeOperation = "multiply";
+  warpOnto(g, doc, quad, 40);
+  g.globalCompositeOperation = "source-over";
+}
+
+// Гомография единичного квадрата в четырёхугольник; дальше картинка режется на
+// сетку, каждая ячейка рисуется аффинно. Перспектива у canvas 2D своя не
+// поддерживается, а на сетке 40x40 расхождение внутри ячейки — доли пикселя.
+function warpOnto(g, src, q, N) {
+  const p0 = q[0], p1 = q[1], p2 = q[2], p3 = q[3];
+  const dx1 = p1.x - p2.x, dx2 = p3.x - p2.x, sx = p0.x - p1.x + p2.x - p3.x;
+  const dy1 = p1.y - p2.y, dy2 = p3.y - p2.y, sy = p0.y - p1.y + p2.y - p3.y;
+  const den = dx1 * dy2 - dx2 * dy1;
+  const gh = den ? (sx * dy2 - dx2 * sy) / den : 0;
+  const hh = den ? (dx1 * sy - sx * dy1) / den : 0;
+  const a = p1.x - p0.x + gh * p1.x, b = p3.x - p0.x + hh * p3.x, c0 = p0.x;
+  const d = p1.y - p0.y + gh * p1.y, e = p3.y - p0.y + hh * p3.y, f = p0.y;
+  const map = (u, v) => {
+    const w = gh * u + hh * v + 1;
+    return { x: (a * u + b * v + c0) / w, y: (d * u + e * v + f) / w };
+  };
+  const sw = src.width / N, sh = src.height / N;
+  for (let j = 0; j < N; j++) {
+    for (let i = 0; i < N; i++) {
+      const u0 = i / N, v0 = j / N;
+      const A = map(u0, v0), B = map(u0 + 1 / N, v0), D = map(u0, v0 + 1 / N);
+      g.save();
+      g.transform((B.x - A.x) / sw, (B.y - A.y) / sw, (D.x - A.x) / sh, (D.y - A.y) / sh, A.x, A.y);
+      // +1 пиксель источника — перекрытие соседних ячеек, иначе видны швы
+      g.drawImage(src, i * sw, j * sh, sw + 1, sh + 1, 0, 0, sw + 1, sh + 1);
+      g.restore();
+    }
+  }
+}
+
+hookPicker($("#sheetdrop"), $("#sheetfile"), openSheet);
+
+$("#sheetclear").onclick = () => {
+  sheet = null;
+  quad = null;
+  $("#sheetctl").hidden = true;
+  document.getElementById("mockwrap")?.remove();
+};
+
+$("#sheetsave").onclick = async () => {
+  const cv = $("#mockcv");
+  if (!cv) return;
+  const blob = await new Promise(res => cv.toBlob(res, "image/png"));
+  await saveFile("на бумаге.png", blob);
+};
+
+/* ---------- старт ---------- */
+(async () => {
+  $("#date").value = new Date().toISOString().slice(0, 10);
+  $("#thrval").textContent = $("#thr").value + "%";
+  try { await document.fonts.load('600 44px "Caveat"'); await document.fonts.load('500 44px "Golos Text"'); } catch {}
+  refreshTyped();
+  sizePad();
+  try { await openPdf(new Uint8Array(await sampleBytes()), "Образец.pdf"); }
+  catch (e) { $("#viewer").innerHTML = '<div class="empty">Не удалось построить образец — загрузите свой PDF.</div>'; }
+  initLibrary();
+  if (location.hash === "#selftest") selfTest();
+})();
+
+// Проверка геометрии: центр страницы и левый верхний угол экрана при всех поворотах.
+function selfTest() {
+  const mw = 600, mh = 800, eq = (a, b) => Math.abs(a - b) < 0.01;
+  const box = (x, y, rot) => placement({ x, y, w: 0, aspect: 1 }, mw, mh, rot);
+  for (const rot of [0, 90, 180, 270]) {
+    const c = box(0.5, 0.5, rot);
+    console.assert(eq(c.x, mw / 2) && eq(c.y, mh / 2), "центр, rot=" + rot, c);
+  }
+  const corners = { 0: [0, mh], 90: [0, 0], 180: [mw, 0], 270: [mw, mh] };
+  for (const rot of [0, 90, 180, 270]) {
+    const c = box(0, 0, rot), [ex, ey] = corners[rot];
+    console.assert(eq(c.x, ex) && eq(c.y, ey), "угол, rot=" + rot, c);
+  }
+  console.log("selfTest: готово");
+}
+</script>
+
+</body>
+</html>
