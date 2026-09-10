@@ -146,7 +146,7 @@
 
   /* Один источник размеров для всех интерактивных контролов: высота и шрифт
      задаются здесь, а не в каждом правиле по отдельности. */
-  .btn, input[type="text"], input[type="date"], .tab {
+  .btn, input[type="text"], input[type="date"], .tab, .lang {
     height: var(--ctl-h);
     font-size: var(--ctl-fs);
     border-radius: var(--r);
@@ -189,7 +189,9 @@
   input[type="range"] { width: 100%; height: 24px; accent-color: var(--accent); touch-action: manipulation; }
 
   .tabs { display: flex; gap: 2px; padding: 3px; background: var(--ground); border-radius: var(--r); }
-  .tab {
+  .tabs.compact { width: max-content; margin-top: 10px; }
+  .lang { padding: 6px 14px; }
+  .tab, .lang {
     flex: 1;
     border: 0;
     background: transparent;
@@ -201,7 +203,7 @@
     white-space: nowrap;
     touch-action: manipulation;
   }
-  .tab[aria-selected="true"] { background: var(--raised); color: var(--ink); box-shadow: var(--shadow); }
+  .tab[aria-selected="true"], .lang[aria-pressed="true"] { background: var(--raised); color: var(--ink); box-shadow: var(--shadow); }
 
   .pad {
     width: 100%;
@@ -421,121 +423,126 @@
 <div class="app">
   <aside class="panel">
     <div class="brand">
-      <div class="eyebrow">Локально в браузере</div>
-      <h1>Подпись на документе <span class="mark" aria-hidden="true">✓</span></h1>
+      <div class="eyebrow" data-i18n="brand.local">Локально в браузере</div>
+      <h1><span data-i18n="brand.title">Подпись на документе</span> <span class="mark" aria-hidden="true">✓</span></h1>
+      <div class="tabs compact" id="langsw" role="group" data-i18n-aria="lang.aria" aria-label="Язык интерфейса">
+        <button type="button" class="lang" data-lang="ru" aria-pressed="true">RU</button>
+        <button type="button" class="lang" data-lang="en" aria-pressed="false">EN</button>
+      </div>
     </div>
 
     <section class="sec">
-      <h2>Документ <span class="num">01</span></h2>
-      <button type="button" class="drop" id="drop">Перетащите PDF или нажмите, чтобы выбрать</button>
-      <div class="meta" id="docmeta">Открыт образец — загрузите свой PDF</div>
+      <h2><span data-i18n="sec.doc">Документ</span> <span class="num">01</span></h2>
+      <button type="button" class="drop" id="drop" data-i18n="doc.drop">Перетащите PDF или нажмите, чтобы выбрать</button>
+      <div class="meta" id="docmeta" data-i18n="doc.sample">Открыт образец — загрузите свой PDF</div>
       <input type="file" id="file" accept="application/pdf" hidden>
     </section>
 
     <section class="sec">
-      <h2>Подпись <span class="num">02</span></h2>
-      <div class="tabs" role="tablist" aria-label="Источник подписи">
-        <button class="tab" role="tab" id="tab-draw" aria-controls="pane-draw" aria-selected="true" data-mode="draw">Нарисовать</button>
-        <button class="tab" role="tab" id="tab-type" aria-controls="pane-type" aria-selected="false" tabindex="-1" data-mode="type">Ввести</button>
-        <button class="tab" role="tab" id="tab-upload" aria-controls="pane-upload" aria-selected="false" tabindex="-1" data-mode="upload">Загрузить</button>
+      <h2><span data-i18n="sec.sign">Подпись</span> <span class="num">02</span></h2>
+      <div class="tabs" role="tablist" data-i18n-aria="tabs.aria" aria-label="Источник подписи">
+        <button class="tab" role="tab" id="tab-draw" aria-controls="pane-draw" aria-selected="true" data-mode="draw" data-i18n="tab.draw">Нарисовать</button>
+        <button class="tab" role="tab" id="tab-type" aria-controls="pane-type" aria-selected="false" tabindex="-1" data-mode="type" data-i18n="tab.type">Ввести</button>
+        <button class="tab" role="tab" id="tab-upload" aria-controls="pane-upload" aria-selected="false" tabindex="-1" data-mode="upload" data-i18n="tab.upload">Загрузить</button>
       </div>
 
       <div data-pane="draw" id="pane-draw" role="tabpanel" aria-labelledby="tab-draw">
         <div class="padwrap">
-          <canvas class="pad" id="pad" aria-label="Поле для рисования подписи"></canvas>
-          <div class="padhint" id="padhint">Нарисуйте подпись мышью или пальцем</div>
+          <canvas class="pad" id="pad" data-i18n-aria="pad.aria" aria-label="Поле для рисования подписи"></canvas>
+          <div class="padhint" id="padhint" data-i18n="pad.hint">Нарисуйте подпись мышью или пальцем</div>
         </div>
         <div class="row" style="margin-top:8px">
-          <button class="btn ghost" id="padclear">Стереть</button>
-          <button class="btn" id="padadd" style="margin-left:auto">Поставить подпись</button>
+          <button class="btn ghost" id="padclear" data-i18n="btn.erase">Стереть</button>
+          <button class="btn" id="padadd" style="margin-left:auto" data-i18n="btn.place">Поставить подпись</button>
         </div>
       </div>
 
       <div data-pane="type" id="pane-type" role="tabpanel" aria-labelledby="tab-type" hidden>
-        <label class="rng" for="signtext">Текст подписи
+        <label class="rng" for="signtext"><span data-i18n="type.label">Текст подписи</span>
           <input type="text" id="signtext" name="signature-text" autocomplete="off" spellcheck="false"
-                 placeholder="И. Волынкин…" value="И. Волынкин">
+                 data-i18n-ph="type.ph" placeholder="И. Волынкин…" value="И. Волынкин">
         </label>
         <div class="preview paper" id="signprev" style="margin-top:8px"></div>
-        <button class="btn wide" id="signadd" style="margin-top:8px">Поставить подпись</button>
+        <button class="btn wide" id="signadd" style="margin-top:8px" data-i18n="btn.place">Поставить подпись</button>
       </div>
 
       <div data-pane="upload" id="pane-upload" role="tabpanel" aria-labelledby="tab-upload" hidden>
-        <button type="button" class="drop" id="sigdrop">Фото или скан листа с подписями</button>
+        <button type="button" class="drop" id="sigdrop" data-i18n="up.drop">Фото или скан листа с подписями</button>
         <input type="file" id="sigfile" accept="image/*" hidden>
 
         <div id="editor" hidden style="display:grid;gap:8px;margin-top:8px">
           <canvas id="cropcv" tabindex="0" role="application"
+                  data-i18n-aria="crop.aria"
                   aria-label="Кадр: рамкой выделяется одна подпись. Стрелки двигают рамку, Shift со стрелками меняет размер"></canvas>
-          <p class="hint">Обведите рамкой одну подпись — ниже видно, что попадёт в документ.</p>
+          <p class="hint" data-i18n="crop.hint">Обведите рамкой одну подпись — ниже видно, что попадёт в документ.</p>
           <label class="rng" for="thr">
-            <span class="row" style="gap:6px">Убрать фон <span class="meta" id="thrval" style="margin-left:auto"></span></span>
+            <span class="row" style="gap:6px"><span data-i18n="crop.bg">Убрать фон</span> <span class="meta" id="thrval" style="margin-left:auto"></span></span>
             <input type="range" id="thr" min="0" max="100" step="1" value="55">
           </label>
           <div class="row">
-            <button class="btn ghost" id="cropall">Весь кадр</button>
+            <button class="btn ghost" id="cropall" data-i18n="btn.wholeframe">Весь кадр</button>
             <span class="meta" id="cropmeta" style="margin-left:auto"></span>
           </div>
           <div class="preview paper" id="upprev"></div>
         </div>
 
-        <button class="btn wide" id="upadd" style="margin-top:8px" disabled>Поставить подпись</button>
+        <button class="btn wide" id="upadd" style="margin-top:8px" disabled data-i18n="btn.place">Поставить подпись</button>
       </div>
     </section>
 
     <section class="sec" id="libsec" hidden>
-      <h2>Мои подписи <span class="num">03</span></h2>
+      <h2><span data-i18n="sec.lib">Мои подписи</span> <span class="num">03</span></h2>
       <div id="libbody"></div>
     </section>
 
     <section class="sec">
-      <h2>Расшифровка и дата <span class="num">04</span></h2>
+      <h2><span data-i18n="sec.name">Расшифровка и дата</span> <span class="num">04</span></h2>
       <div class="row split">
-        <label class="rng" for="fio" style="flex:1">Расшифровка
+        <label class="rng" for="fio" style="flex:1"><span data-i18n="name.label">Расшифровка</span>
           <input type="text" id="fio" name="signer-name" autocomplete="name" spellcheck="false"
-                 placeholder="Волынкин И. В.…" value="Волынкин И. В.">
+                 data-i18n-ph="name.ph" placeholder="Волынкин И. В.…" value="Волынкин И. В.">
         </label>
-        <button class="btn" id="fioadd" style="flex:0 0 auto;align-self:end">ФИО</button>
+        <button class="btn" id="fioadd" style="flex:0 0 auto;align-self:end" data-i18n="btn.name">ФИО</button>
       </div>
       <div class="row split">
-        <label class="rng" for="date" style="flex:1">Дата
+        <label class="rng" for="date" style="flex:1"><span data-i18n="date.label">Дата</span>
           <input type="date" id="date" name="sign-date">
         </label>
-        <button class="btn" id="dateadd" style="flex:0 0 auto;align-self:end">Дата</button>
+        <button class="btn" id="dateadd" style="flex:0 0 auto;align-self:end" data-i18n="btn.date">Дата</button>
       </div>
-      <p class="hint">Штампы ставятся на видимую страницу. Дальше: тянуть мышью — двигать, за угол рамки — менять размер, стрелки — сдвиг на пункт.</p>
+      <p class="hint" data-i18n="place.hint">Штампы ставятся на видимую страницу. Дальше: тянуть мышью — двигать, за угол рамки — менять размер, стрелки — сдвиг на пункт.</p>
     </section>
 
     <section class="sec">
-      <h2>Вид на бумаге <span class="num">05</span></h2>
-      <button type="button" class="drop" id="sheetdrop">Фото пустого листа</button>
+      <h2><span data-i18n="sec.paper">Вид на бумаге</span> <span class="num">05</span></h2>
+      <button type="button" class="drop" id="sheetdrop" data-i18n="paper.drop">Фото пустого листа</button>
       <input type="file" id="sheetfile" accept="image/*" hidden>
-      <p class="hint">Документ впечатается в снимок — видно, как он будет выглядеть распечатанным. Углы рамки подгоняются по краям листа.</p>
+      <p class="hint" data-i18n="paper.hint">Документ впечатается в снимок — видно, как он будет выглядеть распечатанным. Углы рамки подгоняются по краям листа.</p>
       <div class="row" id="sheetctl" hidden>
-        <button class="btn" id="sheetsave">Скачать PNG</button>
-        <button class="btn ghost danger" id="sheetclear" style="margin-left:auto">Убрать</button>
+        <button class="btn" id="sheetsave" data-i18n="btn.savepng">Скачать PNG</button>
+        <button class="btn ghost danger" id="sheetclear" style="margin-left:auto" data-i18n="btn.clearpaper">Убрать</button>
       </div>
     </section>
 
     <section class="sec" id="selpanel" hidden>
-      <h2>Выбранный штамп</h2>
+      <h2 data-i18n="sec.selected">Выбранный штамп</h2>
       <div class="meta" id="selmeta">—</div>
-      <label class="rng" for="size">Размер
+      <label class="rng" for="size"><span data-i18n="sel.size">Размер</span>
         <input type="range" id="size" min="4" max="70" step="1">
       </label>
       <div class="row">
-        <button class="btn ghost danger" id="del" style="margin-left:auto">Удалить</button>
+        <button class="btn ghost danger" id="del" style="margin-left:auto" data-i18n="btn.delete">Удалить</button>
       </div>
     </section>
 
     <div class="foot">
-      <button class="btn primary wide" id="save">Скачать подписанный PDF</button>
-      <p class="hint" id="status" role="status" aria-live="polite">Файл не покидает браузер: PDF собирается на этой странице.</p>
+      <button class="btn primary wide" id="save" data-i18n="foot.save">Скачать подписанный PDF</button>
+      <p class="hint" id="status" role="status" aria-live="polite" data-i18n="foot.status">Файл не покидает браузер: PDF собирается на этой странице.</p>
     </div>
   </aside>
 
-  <main class="viewer" id="viewer" tabindex="0" aria-label="Документ — прокручивается стрелками">
-    <div class="empty">Загрузка образца…</div>
+  <main class="viewer" id="viewer" tabindex="0" data-i18n-aria="viewer.aria" aria-label="Документ — прокручивается стрелками">
+    <div class="empty" data-i18n="doc.loading">Загрузка образца…</div>
   </main>
 </div>
 
@@ -544,6 +551,211 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script>
 const $ = s => document.querySelector(s);
+
+/* ---------- языки ---------- */
+const STR = {
+  ru: {
+    "brand.local": "Локально в браузере",
+    "brand.title": "Подпись на документе",
+    "lang.aria": "Язык интерфейса",
+    "sec.doc": "Документ", "sec.sign": "Подпись", "sec.lib": "Мои подписи",
+    "sec.name": "Расшифровка и дата", "sec.paper": "Вид на бумаге", "sec.selected": "Выбранный штамп",
+    "doc.drop": "Перетащите PDF или нажмите, чтобы выбрать",
+    "doc.replace": "Заменить PDF — перетащите или нажмите",
+    "doc.sample": "Открыт образец — загрузите свой PDF",
+    "doc.loading": "Загрузка образца…",
+    "doc.meta": "{0} · {1} стр.",
+    "tabs.aria": "Источник подписи",
+    "tab.draw": "Нарисовать", "tab.type": "Ввести", "tab.upload": "Загрузить",
+    "pad.aria": "Поле для рисования подписи",
+    "pad.hint": "Нарисуйте подпись мышью или пальцем",
+    "btn.erase": "Стереть", "btn.place": "Поставить подпись",
+    "type.label": "Текст подписи", "type.ph": "И. Волынкин…",
+    "up.drop": "Фото или скан листа с подписями",
+    "crop.aria": "Кадр: рамкой выделяется одна подпись. Стрелки двигают рамку, Shift со стрелками меняет размер",
+    "crop.hint": "Обведите рамкой одну подпись — ниже видно, что попадёт в документ.",
+    "crop.bg": "Убрать фон",
+    "btn.wholeframe": "Весь кадр",
+    "crop.whole": "Кадр: весь снимок · {0}×{1} px",
+    "crop.sel": "Кадр: выделение · {0}×{1} px",
+    "name.label": "Расшифровка", "name.ph": "Волынкин И. В.…", "btn.name": "ФИО",
+    "date.label": "Дата", "btn.date": "Дата",
+    "place.hint": "Штампы ставятся на видимую страницу. Дальше: тянуть мышью — двигать, за угол рамки — менять размер, стрелки — сдвиг на пункт.",
+    "paper.drop": "Фото пустого листа",
+    "paper.hint": "Документ впечатается в снимок — видно, как он будет выглядеть распечатанным. Углы рамки подгоняются по краям листа.",
+    "btn.savepng": "Скачать PNG", "btn.clearpaper": "Убрать",
+    "sel.size": "Размер", "btn.delete": "Удалить",
+    "foot.save": "Скачать подписанный PDF",
+    "foot.status": "Файл не покидает браузер: PDF собирается на этой странице.",
+    "viewer.aria": "Документ — прокручивается стрелками",
+    "label.sign": "подпись", "label.name": "ФИО", "label.date": "дата",
+    "sel.meta": "{0} · стр. {1} · x {2}% · y {3}% · ширина {4}%",
+    "stamp.alt": "{0} на странице {1}",
+    "grip.title": "Потянуть — изменить размер",
+    "page.num": "{0} / {1} · {2}×{3} мм",
+    "flash.draw_first": "Сначала нарисуйте подпись",
+    "flash.enter_name": "Введите ФИО",
+    "flash.pick_date": "Выберите дату",
+    "flash.doc_opened": "Документ открыт",
+    "flash.doc_failed": "Не удалось открыть PDF: {0}",
+    "flash.open_first": "Сначала откройте PDF",
+    "flash.add_something": "Добавьте хотя бы подпись",
+    "flash.build_error": "Ошибка сборки: {0}",
+    "flash.saved": "Файл сохранён",
+    "flash.declined": "Сохранение отменено",
+    "flash.save_failed": "Не удалось сохранить: {0}",
+    "flash.downloaded": "Файл скачан",
+    "flash.sig_saved": "Подпись сохранена",
+    "flash.sig_deleted": "Подпись удалена",
+    "flash.sig_first": "Сначала нарисуйте, наберите или загрузите подпись",
+    "lib.empty": "Пока пусто. Нарисуйте, наберите или загрузите подпись и нажмите «Сохранить текущую».",
+    "lib.save": "Сохранить текущую подпись",
+    "lib.note": "Подписи лежат в этом браузере и никуда не отправляются. На другом устройстве их не будет.",
+    "lib.tile": "Поставить на документ", "lib.remove": "Удалить",
+    "lib.confirm": "Удалить подпись «{0}»? Отменить будет нельзя.",
+    "sig.default": "Подпись",
+    "mock.caption": "так это будет выглядеть на бумаге — тяните точки по углам листа",
+    "corner.tl": "левый верхний", "corner.tr": "правый верхний",
+    "corner.br": "правый нижний", "corner.bl": "левый нижний",
+    "corner.aria": "{0} угол листа — стрелки двигают",
+    "file.sample": "Образец.pdf", "file.signed": "{0} — подписан.pdf",
+    "file.paper": "на бумаге.png", "file.doc": "документ",
+    "sample.badge": "ОБРАЗЕЦ — загрузите свой PDF слева",
+    "sample.title": "Акт приёма-передачи оборудования № 14/2026",
+    "sample.city": "г. Санкт-Петербург",
+    "sample.p1": "Исполнитель передал, а Заказчик принял оборудование в количестве 3 (трёх) единиц",
+    "sample.p2": "согласно спецификации. Претензий по комплектности и внешнему виду не имеется.",
+    "sample.parties": "Стороны:",
+    "sample.party1": "Исполнитель — ООО «Пример», ИНН 7800000000",
+    "sample.party2": "Заказчик — ООО «Образец», ИНН 7810000000",
+    "sample.signatures": "Подписи сторон",
+    "sample.sig": "подпись", "sample.name": "расшифровка (ФИО)", "sample.date": "дата"
+  },
+  en: {
+    "brand.local": "Runs in your browser",
+    "brand.title": "Sign a document",
+    "lang.aria": "Interface language",
+    "sec.doc": "Document", "sec.sign": "Signature", "sec.lib": "My signatures",
+    "sec.name": "Name and date", "sec.paper": "On paper", "sec.selected": "Selected stamp",
+    "doc.drop": "Drop a PDF here, or click to choose",
+    "doc.replace": "Replace PDF — drop or click",
+    "doc.sample": "Showing a sample — load your own PDF",
+    "doc.loading": "Loading the sample…",
+    "doc.meta": "{0} · {1} p.",
+    "tabs.aria": "Signature source",
+    "tab.draw": "Draw", "tab.type": "Type", "tab.upload": "Upload",
+    "pad.aria": "Signature drawing area",
+    "pad.hint": "Draw your signature with a mouse or a finger",
+    "btn.erase": "Erase", "btn.place": "Place signature",
+    "type.label": "Signature text", "type.ph": "J. Smith…",
+    "up.drop": "Photo or scan of a sheet with signatures",
+    "crop.aria": "Frame: select one signature. Arrows move the frame, Shift with arrows resizes it",
+    "crop.hint": "Frame one signature — the preview below shows what goes into the document.",
+    "crop.bg": "Remove background",
+    "btn.wholeframe": "Whole frame",
+    "crop.whole": "Frame: whole photo · {0}×{1} px",
+    "crop.sel": "Frame: selection · {0}×{1} px",
+    "name.label": "Printed name", "name.ph": "Smith J. A.…", "btn.name": "Name",
+    "date.label": "Date", "btn.date": "Date",
+    "place.hint": "Stamps land on the page you are looking at. Then: drag to move, pull the corner handle to resize, arrows nudge by a point.",
+    "paper.drop": "Photo of a blank sheet",
+    "paper.hint": "The document is printed into the photo, so you see how it would look on paper. Drag the corners onto the sheet edges.",
+    "btn.savepng": "Download PNG", "btn.clearpaper": "Remove",
+    "sel.size": "Size", "btn.delete": "Delete",
+    "foot.save": "Download signed PDF",
+    "foot.status": "The file never leaves your browser: the PDF is assembled on this page.",
+    "viewer.aria": "Document — scroll with arrow keys",
+    "label.sign": "signature", "label.name": "name", "label.date": "date",
+    "sel.meta": "{0} · p. {1} · x {2}% · y {3}% · width {4}%",
+    "stamp.alt": "{0} on page {1}",
+    "grip.title": "Drag to resize",
+    "page.num": "{0} / {1} · {2}×{3} mm",
+    "flash.draw_first": "Draw a signature first",
+    "flash.enter_name": "Enter a name",
+    "flash.pick_date": "Pick a date",
+    "flash.doc_opened": "Document opened",
+    "flash.doc_failed": "Could not open the PDF: {0}",
+    "flash.open_first": "Open a PDF first",
+    "flash.add_something": "Add at least a signature",
+    "flash.build_error": "Assembly failed: {0}",
+    "flash.saved": "File saved",
+    "flash.declined": "Saving cancelled",
+    "flash.save_failed": "Could not save: {0}",
+    "flash.downloaded": "File downloaded",
+    "flash.sig_saved": "Signature saved",
+    "flash.sig_deleted": "Signature deleted",
+    "flash.sig_first": "Draw, type or upload a signature first",
+    "lib.empty": "Nothing saved yet. Draw, type or upload a signature, then press “Save current signature”.",
+    "lib.save": "Save current signature",
+    "lib.note": "Signatures stay in this browser and are never uploaded. They will not be on another device.",
+    "lib.tile": "Place on the document", "lib.remove": "Delete",
+    "lib.confirm": "Delete signature “{0}”? This cannot be undone.",
+    "sig.default": "Signature",
+    "mock.caption": "this is how it will look on paper — drag the dots to the sheet corners",
+    "corner.tl": "Top-left", "corner.tr": "Top-right",
+    "corner.br": "Bottom-right", "corner.bl": "Bottom-left",
+    "corner.aria": "{0} corner of the sheet — arrows move it",
+    "file.sample": "Sample.pdf", "file.signed": "{0} — signed.pdf",
+    "file.paper": "on paper.png", "file.doc": "document",
+    "sample.badge": "SAMPLE — load your own PDF on the left",
+    "sample.title": "Equipment Handover Act No. 14/2026",
+    "sample.city": "London",
+    "sample.p1": "The Contractor has handed over and the Client has accepted 3 (three) units of equipment",
+    "sample.p2": "per the specification. No claims as to completeness or condition have been raised.",
+    "sample.parties": "Parties:",
+    "sample.party1": "Contractor — Example Ltd, reg. no. 7800000000",
+    "sample.party2": "Client — Sample Ltd, reg. no. 7810000000",
+    "sample.signatures": "Signatures",
+    "sample.sig": "signature", "sample.name": "printed name", "sample.date": "date"
+  }
+};
+
+// Язык по браузеру, выбор пользователя перекрывает. По IP не определяем — ломается в поездках.
+function detectLang() {
+  try {
+    const saved = localStorage.getItem("lang");
+    if (saved && STR[saved]) return saved;
+  } catch {}
+  const list = navigator.languages || [navigator.language || "en"];
+  return list.some(l => String(l).toLowerCase().startsWith("ru")) ? "ru" : "en";
+}
+
+let lang = detectLang();
+
+function t(key, ...args) {
+  let out = (STR[lang] && STR[lang][key]) || STR.en[key] || key;
+  args.forEach((v, i) => { out = out.split("{" + i + "}").join(v); });
+  return out;
+}
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(e => { e.textContent = t(e.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-ph]").forEach(e => { e.placeholder = t(e.dataset.i18nPh); });
+  document.querySelectorAll("[data-i18n-aria]").forEach(e => { e.setAttribute("aria-label", t(e.dataset.i18nAria)); });
+  document.querySelectorAll("#langsw .lang").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+  // то, что собирается кодом, надо перерисовать отдельно
+  if (pdfDocProxy) {
+    $("#docmeta").textContent = t("doc.meta", docName, pdfDocProxy.numPages);
+    $("#drop").textContent = t(isSample ? "doc.drop" : "doc.replace");
+  }
+  document.querySelectorAll(".pagenum").forEach((n, i) => {
+    if (n.dataset.mm) n.textContent = t("page.num", i + 1 - (sheet ? 1 : 0), pdfDocProxy ? pdfDocProxy.numPages : 1, ...n.dataset.mm.split("x"));
+  });
+  const cap = document.querySelector("#mockwrap .pagenum");
+  if (cap) cap.textContent = t("mock.caption");
+  document.querySelectorAll("#mockov .corner").forEach((c, i) => {
+    c.setAttribute("aria-label", t("corner.aria", t(["corner.tl", "corner.tr", "corner.br", "corner.bl"][i])));
+  });
+  renderItems();
+  syncSelPanel();
+  if (srcCanvas) processUpload();
+  if (sigDB) { renderLibShell(); refreshLibrary(); }
+  refreshTyped();
+  if (isSample) reloadSample();
+}
+
+
 const INK = "#12203f";              // чернила: тёмно-синий, как в реальной подписи
 let srcBytes = null;                // исходный PDF (Uint8Array), не отдаём его pdf.js напрямую
 let pages = [];                     // {el, overlay, rot}
@@ -808,8 +1020,7 @@ function processUpload() {
   img.src = uploaded.toDataURL("image/png");
   $("#upprev").replaceChildren(img);
   const whole = crop.w === srcCanvas.width && crop.h === srcCanvas.height;
-  $("#cropmeta").textContent = (whole ? "Кадр: весь снимок · " : "Кадр: выделение · ")
-    + uploaded.width + "\u00d7" + uploaded.height + " px";
+  $("#cropmeta").textContent = t(whole ? "crop.whole" : "crop.sel", uploaded.width, uploaded.height);
 }
 
 // Бумагу на фотографии освещает неровно, поэтому фон оценивается по клеткам:
@@ -913,7 +1124,7 @@ function hookPicker(zone, input, cb) {
 const DEFAULT_W = { sign: 0.26, name: 0.22, date: 0.14 };
 // раскладка строки подписания в наших документах: подпись / расшифровка / дата
 const DEFAULT_X = { sign: 0.28, name: 0.58, date: 0.82 };
-const LABEL = { sign: "подпись", name: "ФИО", date: "дата" };
+const LABEL = { sign: "label.sign", name: "label.name", date: "label.date" };
 
 function visiblePage() {
   const mid = $("#viewer").getBoundingClientRect().top + $("#viewer").clientHeight / 2;
@@ -938,18 +1149,24 @@ function addItem(type, canvas) {
   document.getElementById("it" + sel)?.scrollIntoView({ block: "center", behavior: "smooth" });
 }
 
-$("#padadd").onclick = () => { if (padDirty) addItem("sign", pad); else flash("Сначала нарисуйте подпись"); };
+$("#padadd").onclick = () => { if (padDirty) addItem("sign", pad); else flash(t("flash.draw_first")); };
 $("#signadd").onclick = () => addItem("sign", typedCanvas());
 $("#upadd").onclick = () => uploaded && addItem("sign", uploaded);
 $("#fioadd").onclick = () => {
   const v = $("#fio").value.trim();
-  v ? addItem("name", textCanvas(v, '"Golos Text", sans-serif', 500)) : flash("Введите ФИО");
+  v ? addItem("name", textCanvas(v, '"Golos Text", sans-serif', 500)) : flash(t("flash.enter_name"));
 };
+// Формат даты берём из локали, а не собираем строкой
+function fmtDate(dt) {
+  return new Intl.DateTimeFormat(lang === "ru" ? "ru-RU" : "en-GB",
+    { day: "2-digit", month: "2-digit", year: "numeric" }).format(dt);
+}
+
 $("#dateadd").onclick = () => {
   const v = $("#date").value;
-  if (!v) return flash("Выберите дату");
-  const [y, m, d] = v.split("-");
-  addItem("date", textCanvas(`${d}.${m}.${y}`, '"Golos Text", sans-serif', 500));
+  if (!v) return flash(t("flash.pick_date"));
+  const [y, m, d] = v.split("-").map(Number);
+  addItem("date", textCanvas(fmtDate(new Date(y, m - 1, d)), '"Golos Text", sans-serif', 500));
 };
 
 function renderItems() {
@@ -963,11 +1180,11 @@ function renderItems() {
     el.title = LABEL[it.type];
     const img = document.createElement("img");
     img.src = it.dataUrl;
-    img.alt = LABEL[it.type] + " на странице " + (it.page + 1);
+    img.alt = t("stamp.alt", t(LABEL[it.type]), it.page + 1);
     el.append(img);
     const grip = document.createElement("div");
     grip.className = "grip";
-    grip.title = "Потянуть — изменить размер";
+    grip.title = t("grip.title");
     grip.addEventListener("pointerdown", e => startResize(e, it, el));
     el.append(grip);
     place(el, it);
@@ -1038,8 +1255,8 @@ function syncSelPanel() {
   const it = selItem();
   $("#selpanel").hidden = !it;
   if (!it) return;
-  $("#selmeta").textContent = `${LABEL[it.type]} · стр. ${it.page + 1} · x ${(it.x * 100).toFixed(0)}%`
-    + ` · y ${(it.y * 100).toFixed(0)}% · ширина ${Math.round(it.w * 100)}%`;
+  $("#selmeta").textContent = t("sel.meta", t(LABEL[it.type]), it.page + 1,
+    (it.x * 100).toFixed(0), (it.y * 100).toFixed(0), Math.round(it.w * 100));
   $("#size").value = Math.round(it.w * 100);
 }
 $("#size").oninput = () => {
@@ -1065,7 +1282,15 @@ addEventListener("keydown", e => {
 });
 
 /* ---------- загрузка и показ PDF ---------- */
-let pdfDocProxy = null, docName = "";
+let pdfDocProxy = null, docName = "", isSample = false;
+
+async function reloadSample() {
+  const keep = items.slice();
+  await openPdf(new Uint8Array(await sampleBytes()), t("file.sample"));
+  isSample = true;
+  $("#drop").textContent = t("doc.drop");
+  if (keep.length) { items = keep; renderItems(); scheduleMock(); }
+}
 
 async function openPdf(bytes, name) {
   srcBytes = bytes;
@@ -1075,8 +1300,8 @@ async function openPdf(bytes, name) {
   pdfDocProxy = await pdfjsLib.getDocument({ data: bytes.slice(0), disableFontFace: true, isEvalSupported: false }).promise;
   docName = name;
   await renderPages();
-  $("#docmeta").textContent = `${name} · ${pdfDocProxy.numPages} стр.`;
-  $("#drop").textContent = "Заменить PDF — перетащите или нажмите";
+  $("#docmeta").textContent = t("doc.meta", name, pdfDocProxy.numPages);
+  $("#drop").textContent = t(isSample ? "doc.drop" : "doc.replace");
   mountMock();
   scheduleMock();
 }
@@ -1108,7 +1333,9 @@ async function renderPages() {
     pd.append(canvas, overlay);
     const num = document.createElement("div");
     num.className = "pagenum";
-    num.textContent = `${n} / ${pdfDocProxy.numPages} · ${Math.round(base.width * 25.4 / 72)}×${Math.round(base.height * 25.4 / 72)} мм`;
+    const mmW = Math.round(base.width * 25.4 / 72), mmH = Math.round(base.height * 25.4 / 72);
+    num.dataset.mm = mmW + "x" + mmH;
+    num.textContent = t("page.num", n, pdfDocProxy.numPages, mmW, mmH);
     wrap.append(pd, num);
     viewer.append(wrap);
     await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
@@ -1134,9 +1361,11 @@ hookPicker($("#drop"), $("#file"), async f => {
   const buf = new Uint8Array(await f.arrayBuffer());
   try {
     await openPdf(buf, f.name);
-    flash("Документ открыт");
+    isSample = false;
+    $("#drop").textContent = t("doc.replace");
+    flash(t("flash.doc_opened"));
   } catch (err) {
-    flash("Не удалось открыть PDF: " + err.message);
+    flash(t("flash.doc_failed", err.message));
   }
 });
 
@@ -1154,15 +1383,15 @@ async function sampleBytes() {
     g.fillStyle = color || "#111111";
     g.fillText(t, M, y * S);
   };
-  line("ОБРАЗЕЦ — загрузите свой PDF слева", 70, 9.5, 500, "#8a90a0");
-  line("Акт приёма-передачи оборудования № 14/2026", 110, 17, 600);
-  line("г. Санкт-Петербург", 140, 11, 400, "#555b6b");
-  line("Исполнитель передал, а Заказчик принял оборудование в количестве 3 (трёх) единиц", 190, 11, 400);
-  line("согласно спецификации. Претензий по комплектности и внешнему виду не имеется.", 212, 11, 400);
-  line("Стороны:", 262, 11, 500);
-  line("Исполнитель — ООО «Пример», ИНН 7800000000", 286, 11, 400);
-  line("Заказчик — ООО «Образец», ИНН 7810000000", 308, 11, 400);
-  line("Подписи сторон", 620, 11, 500);
+  line(t("sample.badge"), 70, 9.5, 500, "#8a90a0");
+  line(t("sample.title"), 110, 17, 600);
+  line(t("sample.city"), 140, 11, 400, "#555b6b");
+  line(t("sample.p1"), 190, 11, 400);
+  line(t("sample.p2"), 212, 11, 400);
+  line(t("sample.parties"), 262, 11, 500);
+  line(t("sample.party1"), 286, 11, 400);
+  line(t("sample.party2"), 308, 11, 400);
+  line(t("sample.signatures"), 620, 11, 500);
   g.strokeStyle = "#c9cdd8"; g.lineWidth = 1 * S;
   [700, 740].forEach(y => {
     g.beginPath(); g.moveTo(M, y * S); g.lineTo(260 * S, y * S);
@@ -1170,14 +1399,14 @@ async function sampleBytes() {
     g.moveTo(460 * S, y * S); g.lineTo(531 * S, y * S);
     g.stroke();
   });
-  line("подпись", 714, 8.5, 400, "#8a90a0");
+  line(t("sample.sig"), 714, 8.5, 400, "#8a90a0");
   g.font = `400 ${8.5 * S}px "Golos Text", sans-serif`;
   g.fillStyle = "#8a90a0";
-  g.fillText("расшифровка (ФИО)", 300 * S, 714 * S);
-  g.fillText("дата", 460 * S, 714 * S);
-  g.fillText("подпись", M, 754 * S);
-  g.fillText("расшифровка (ФИО)", 300 * S, 754 * S);
-  g.fillText("дата", 460 * S, 754 * S);
+  g.fillText(t("sample.name"), 300 * S, 714 * S);
+  g.fillText(t("sample.date"), 460 * S, 714 * S);
+  g.fillText(t("sample.sig"), M, 754 * S);
+  g.fillText(t("sample.name"), 300 * S, 754 * S);
+  g.fillText(t("sample.date"), 460 * S, 754 * S);
 
   const doc = await PDFLib.PDFDocument.create();
   const png = await doc.embedPng(c.toDataURL("image/png"));
@@ -1199,8 +1428,8 @@ function placement(it, mw, mh, rot) {
 }
 
 $("#save").onclick = async () => {
-  if (!srcBytes) return flash("Сначала откройте PDF");
-  if (!items.length) return flash("Добавьте хотя бы подпись");
+  if (!srcBytes) return flash(t("flash.open_first"));
+  if (!items.length) return flash(t("flash.add_something"));
   $("#save").disabled = true;
   try {
     const doc = await PDFLib.PDFDocument.load(srcBytes);
@@ -1215,10 +1444,10 @@ $("#save").onclick = async () => {
       page.drawImage(png, { ...placement(it, mw, mh, rot), rotate: PDFLib.degrees(rot) });
     }
     const out = await doc.save();
-    const name = ($("#docmeta").textContent.split(" · ")[0] || "документ").replace(/\.pdf$/i, "") + " — подписан.pdf";
+    const name = t("file.signed", (docName || t("file.doc")).replace(/\.pdf$/i, ""));
     await saveFile(name, new Blob([out], { type: "application/pdf" }));
   } catch (e) {
-    flash("Ошибка сборки: " + e.message);
+    flash(t("flash.build_error", e.message));
   }
   $("#save").disabled = false;
 };
@@ -1226,8 +1455,8 @@ $("#save").onclick = async () => {
 async function saveFile(name, blob) {
   const dl = window.claude?.use ? await window.claude.use("downloads") : null;
   if (dl) {
-    try { await dl.save({ filename: name, data: blob }); flash("Файл сохранён"); }
-    catch (e) { flash(e.code === "declined" ? "Сохранение отменено" : "Не удалось сохранить: " + e.message); }
+    try { await dl.save({ filename: name, data: blob }); flash(t("flash.saved")); }
+    catch (e) { flash(e.code === "declined" ? t("flash.declined") : t("flash.save_failed", e.message)); }
     return;
   }
   const a = document.createElement("a");
@@ -1235,14 +1464,14 @@ async function saveFile(name, blob) {
   a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  flash("Файл скачан");
+  flash(t("flash.downloaded"));
 }
 
 let flashT;
 function flash(msg) {
   $("#status").textContent = msg;
   clearTimeout(flashT);
-  flashT = setTimeout(() => { $("#status").textContent = "Файл не покидает браузер: PDF собирается на этой странице."; }, 4000);
+  flashT = setTimeout(() => { $("#status").textContent = t("foot.status"); }, 4000);
 }
 
 /* ---------- личные подписи: IndexedDB, без сервера и без входа ---------- */
@@ -1288,13 +1517,21 @@ async function initLibrary() {
     return;                       // приватное окно или запрет хранилища — секции просто нет
   }
   $("#libsec").hidden = false;
+  renderLibShell();
+  await refreshLibrary();
+}
+
+// Оболочка библиотеки перерисовывается при смене языка, поэтому вынесена отдельно.
+function renderLibShell() {
   lib.innerHTML =
     '<div class="lib" id="libgrid"></div>' +
-    '<p class="hint" id="libempty" hidden>Пока пусто. Нарисуйте, наберите или загрузите подпись и нажмите «Сохранить текущую».</p>' +
-    '<button class="btn wide" id="libsave" style="margin-top:8px">Сохранить текущую подпись</button>' +
-    '<p class="hint" style="margin-top:6px">Подписи лежат в этом браузере и никуда не отправляются. На другом устройстве их не будет.</p>';
+    '<p class="hint" id="libempty" hidden></p>' +
+    '<button class="btn wide" id="libsave" style="margin-top:8px"></button>' +
+    '<p class="hint" id="libnote" style="margin-top:6px"></p>';
+  $("#libempty").textContent = t("lib.empty");
+  $("#libsave").textContent = t("lib.save");
+  $("#libnote").textContent = t("lib.note");
   $("#libsave").onclick = saveSignature;
-  await refreshLibrary();
 }
 
 async function refreshLibrary() {
@@ -1307,15 +1544,16 @@ async function refreshLibrary() {
   for (const it of items) {
     const el = document.createElement("div");
     el.className = "sig";
-    el.title = "Поставить на документ";
-    el.innerHTML = '<img alt=""><span class="nm"></span><button class="rm" title="Удалить">\u00d7</button>';
+    el.title = t("lib.tile");
+    el.innerHTML = '<img alt=""><span class="nm"></span><button class="rm">\u00d7</button>';
+    el.querySelector(".rm").title = t("lib.remove");
     el.querySelector("img").src = it.data;
     el.querySelector(".nm").textContent = it.name;
     el.onclick = e => { if (!e.target.closest(".rm")) placeSaved(it); };
     el.querySelector(".rm").onclick = async () => {
-      if (!confirm(`Удалить подпись «${it.name}»? Отменить будет нельзя.`)) return;
+      if (!confirm(t("lib.confirm", it.name))) return;
       await sigDel(it.id);
-      flash("Подпись удалена");
+      flash(t("flash.sig_deleted"));
       refreshLibrary();
     };
     grid.append(el);
@@ -1336,9 +1574,9 @@ function placeSaved(it) {
 
 async function saveSignature() {
   const c = currentSigCanvas();
-  if (!c) return flash("Сначала нарисуйте, наберите или загрузите подпись");
+  if (!c) return flash(t("flash.sig_first"));
   const t = trim(c) || c;
-  const name = ($("#fio").value.trim() || "Подпись") + " · " + new Date().toLocaleDateString("ru-RU");
+  const name = ($("#fio").value.trim() || t("sig.default")) + " · " + fmtDate(new Date());
   try {
     await sigPut({
       id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
@@ -1347,9 +1585,9 @@ async function saveSignature() {
       created: new Date().toISOString()
     });
   } catch (e) {
-    return flash("Не удалось сохранить: " + (e.message || e.name));
+    return flash(t("flash.save_failed", e.message || e.name));
   }
-  flash("Подпись сохранена");
+  flash(t("flash.sig_saved"));
   refreshLibrary();
 }
 
@@ -1388,19 +1626,19 @@ function mountMock() {
   wrap.id = "mockwrap";
   wrap.innerHTML =
     '<div class="page" id="mockpage"><canvas id="mockcv"></canvas><div class="overlay" id="mockov"></div></div>' +
-    '<div class="pagenum">так это будет выглядеть на бумаге — тяните точки по углам листа</div>';
+    '<div class="pagenum">' + t("mock.caption") + '</div>';
   $("#viewer").prepend(wrap);
   fitMock();
   const cv = $("#mockcv");
   cv.width = sheet.width;
   cv.height = sheet.height;
-  const CORNER_NAME = ["левый верхний", "правый верхний", "правый нижний", "левый нижний"];
+  const CORNER_KEY = ["corner.tl", "corner.tr", "corner.br", "corner.bl"];
   quad.forEach((_, i) => {
     const h = document.createElement("button");
     h.type = "button";
     h.className = "corner";
     h.dataset.i = i;
-    h.setAttribute("aria-label", CORNER_NAME[i] + " угол листа — стрелки двигают");
+    h.setAttribute("aria-label", t("corner.aria", t(CORNER_KEY[i])));
     h.addEventListener("pointerdown", e => startCorner(e, i, h));
     h.addEventListener("keydown", e => {
       const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
@@ -1551,17 +1789,24 @@ $("#sheetsave").onclick = async () => {
   const cv = $("#mockcv");
   if (!cv) return;
   const blob = await new Promise(res => cv.toBlob(res, "image/png"));
-  await saveFile("на бумаге.png", blob);
+  await saveFile(t("file.paper"), blob);
 };
 
 /* ---------- старт ---------- */
 (async () => {
   $("#date").value = new Date().toISOString().slice(0, 10);
   $("#thrval").textContent = $("#thr").value + "%";
+  document.querySelectorAll("#langsw .lang").forEach(b => b.onclick = () => {
+    if (b.dataset.lang === lang) return;
+    lang = b.dataset.lang;
+    try { localStorage.setItem("lang", lang); } catch {}
+    applyLang();
+  });
+  applyLang();
   try { await document.fonts.load('600 44px "Caveat"'); await document.fonts.load('500 44px "Golos Text"'); } catch {}
   refreshTyped();
   sizePad();
-  try { await openPdf(new Uint8Array(await sampleBytes()), "Образец.pdf"); }
+  try { await reloadSample(); }
   catch (e) { $("#viewer").innerHTML = '<div class="empty">Не удалось построить образец — загрузите свой PDF.</div>'; }
   initLibrary();
   if (location.hash === "#selftest") selfTest();
